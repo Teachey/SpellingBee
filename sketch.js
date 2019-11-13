@@ -4,7 +4,7 @@ var scl = 40; //change this to change the size of the letters
 var gameWidth = 720; //this is set by width of iPhone 7
 var gameHeight = 720; //change this to change the height of the playing space
 var screenWidth = 720; //width of iPhone 7
-var screenHeight= windowHeight; //height of iPhone 7
+var screenHeight= 1334; //height of iPhone 7
 
 var gameWidth; //this is set by width of iPhone 7
 var gameHeight; //change this to change the height of the playing space
@@ -252,6 +252,7 @@ function initLetters() {
 
 function swiped(event) {
   console.log(event);
+    touch-action: none;
   if (event.direction == 4) {
     s.dir(1, 0); //right
   } else if (event.direction == 8) {
