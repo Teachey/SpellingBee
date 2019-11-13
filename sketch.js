@@ -4,7 +4,7 @@ var scl = 40; //change this to change the size of the letters
 var gameWidth = 720; //this is set by width of iPhone 7
 var gameHeight = 720; //change this to change the height of the playing space
 var screenWidth = 720; //width of iPhone 7
-var screenHeight= 1300; //height of iPhone 7
+var screenHeight= 1200; //height of iPhone 7
 
 var gameWidth; //this is set by width of iPhone 7
 var gameHeight; //change this to change the height of the playing space
@@ -130,13 +130,13 @@ function setup() {
     }, false);
 
     // set options to prevent default behaviors for swipe, pinch, etc
-    var options = {
-        preventDefault: true
-    };
+//     var options = {
+//         preventDefault: true
+//     };
 
     //https://editor.p5js.org/projects/HyEDRsPel
     // document.body registers gestures anywhere on the page
-    var hammer = new Hammer(document.body, options);
+    var hammer = new Hammer(document.body);
     console.log(hammer)
     hammer.get('swipe').set({
         direction: Hammer.DIRECTION_ALL
