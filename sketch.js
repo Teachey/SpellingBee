@@ -252,7 +252,6 @@ function initLetters() {
 
 function swiped(event) {
   console.log(event);
-    touch-action: none;
   if (event.direction == 4) {
     s.dir(1, 0); //right
   } else if (event.direction == 8) {
