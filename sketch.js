@@ -1,15 +1,20 @@
 var s;
-var scl = 40; //change this to change the size of the letters
 
-var gameWidth = 720; //this is set by width of iPhone 7
-var gameHeight = 720; //change this to change the height of the playing space
-var screenWidth = 720; //width of iPhone 7
-var screenHeight= 1334; //height of iPhone 7
 
-var gameWidth; //this is set by width of iPhone 7
-var gameHeight; //change this to change the height of the playing space
-var screenWidth; //width of iPhone 7
-var screenHeight; //height of iPhone 7
+var scl; //= 50; //change this to change the size of the letters
+var gameWidth; //= 750; //this is set by width of iPhone 7
+var gameHeight; //= 750; //change this to change the height of the playing space
+var screenWidth; //= 750; //width of iPhone 7
+var screenHeight; //= 1334; //height of iPhone 7
+var cnv;
+
+/**
+var scl;
+var gameWidth;
+var gameHeight;
+var screenWidth;
+var screenHeight;
+**/
 
 //letter positions
 var possibleLetterPositions = [];
@@ -115,7 +120,13 @@ function preload() {
 }
 
 function setup() {
-    createCanvas(screenWidth, screenHeight);
+    gameWidth = min(windowWidth, windowHeight, 750);
+    gameHeight = gameWidth;
+    screenWidth = gameWidth;
+    screenHeight = max(windowWidth, windowHeight, 950);
+    scl = gameWidth / 15;
+    cnv = createCanvas(screenWidth, screenHeight);
+    centerCanvas();
     s = new Snake();
     frameRate(8);
     populatePossibleLetterPos();
@@ -130,18 +141,28 @@ function setup() {
     }, false);
 
     // set options to prevent default behaviors for swipe, pinch, etc
+    // no obvious difference-- ateachey3
     var options = {
         preventDefault: true
     };
 
     //https://editor.p5js.org/projects/HyEDRsPel
     // document.body registers gestures anywhere on the page
+    // added by ateachey3
     var hammer = new Hammer(document.body, options);
-    console.log(hammer)
     hammer.get('swipe').set({
         direction: Hammer.DIRECTION_ALL
     });
     hammer.on("swipe", swiped);
+}
+
+function centerCanvas() {
+    var x = (windowWidth - width) / 2;
+    cnv.position(x, 0);
+}
+
+function windowResized() {
+    centerCanvas();
 }
 
 function populatePossibleLetterPos() {
@@ -250,17 +271,17 @@ function initLetters() {
     }
 }
 
+// ateachey3
 function swiped(event) {
-  console.log(event);
-  if (event.direction == 4) {
-    s.dir(1, 0); //right
-  } else if (event.direction == 8) {
-    s.dir(0, -1); //up
-  } else if (event.direction == 16) {
-    s.dir(0, 1); //down
-  } else if (event.direction == 2) {
-    s.dir(-1, 0); //left
-  }
+    if (event.direction == 4) {
+        s.dir(1, 0); //right
+    } else if (event.direction == 8) {
+        s.dir(0, -1); //up
+    } else if (event.direction == 16) {
+        s.dir(0, 1); //down
+    } else if (event.direction == 2) {
+        s.dir(-1, 0); //left
+    }
     return false;
 }
 
@@ -445,22 +466,24 @@ function draw() {
     }
     text(uneatenLetters[i], letterPositions[i].x, letterPositions[i].y, scl, scl);
   }
-    // the target words will go inside these boxes-- ateachey3
+    // the target words will go inside this box-- ateachey3
     fill(213, 48, 50);
-    rect(0, gameHeight, gameWidth, 100);
+    rect(0, gameHeight, gameWidth, scl * 2);
 
     fill(255);
-    text(display1, gameWidth/2, gameHeight + 65);
+    text(display1, gameWidth/2, gameHeight + scl * 1.5);
 
-  fill(213, 48, 50);
-  var str = "score:" + score;
-  text(str, 75, gameHeight + 130, scl, scl);
-  //draw words eaten
-  if (wordsEaten) {
-    for (var i = 0; i < wordsEaten.length; i++) {
-      text(wordsEaten[i], 75, gameHeight + 130 + (i+1)*30, scl, scl);
+    fill(213, 48, 50);
+    var str = "score:" + score;
+    text(str, scl * 1.5, gameHeight + scl * 2.5, scl, scl);
+    /**
+    //draw words eaten
+    if (wordsEaten) {
+        for (var i = 0; i < wordsEaten.length; i++) {
+            text(wordsEaten[i], 75, gameHeight + 130 + (i+1)*30, scl, scl);
+        }
     }
-  }
+    **/
     s.update();
     s.show();
     // if (bonusFading) { //Duri added this - does not require server
