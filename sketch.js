@@ -16,7 +16,7 @@ var eatenLetterPositions = [];
 var uneatenLetters = [];
 var eatenLetters = [];
 var eatenLettersInWord = [];
-var currentString = "";
+var currentString = ""; //TODO: this could be local to function
 var prevNumLettersEaten = 0;
 var wordsEaten = [];
 var justEaten;
@@ -114,7 +114,7 @@ function setup() {
     gameWidth = min(windowWidth, windowHeight, 750);
     gameHeight = gameWidth;
     screenWidth = gameWidth;
-    screenHeight = windowHeight;
+    screenHeight = max(windowWidth, windowHeight, 950);
     scl = gameWidth / 15;
     cnv = createCanvas(screenWidth, screenHeight);
     centerCanvas();
@@ -130,16 +130,14 @@ function setup() {
             e.preventDefault();
         }
     }, false);
-    
+
     // set options to prevent default behaviors for swipe, pinch, etc
-    // no obvious difference-- ateachey3
     var options = {
-        preventDefault: true
+        preventDefaults: true
     };
 
     //https://editor.p5js.org/projects/HyEDRsPel
     // document.body registers gestures anywhere on the page
-    // added by ateachey3
     var hammer = new Hammer(document.body, options);
     hammer.get('swipe').set({
         direction: Hammer.DIRECTION_ALL
@@ -273,7 +271,8 @@ function swiped(event) {
     } else if (event.direction == 2) {
         s.dir(-1, 0); //left
     }
-    return false;
+    // Didn't prevent default swipe behavior
+    //return false;
 }
 
 function draw() {
@@ -468,6 +467,7 @@ function draw() {
     var str = "score:" + score;
     text(str, scl * 1.5, gameHeight + scl * 2.5, scl, scl);
     /**
+    Maybe add "Tap here to continue in this space"-- ateachey3
     //draw words eaten
     if (wordsEaten) {
         for (var i = 0; i < wordsEaten.length; i++) {
