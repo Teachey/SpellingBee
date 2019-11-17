@@ -137,9 +137,7 @@ function setup() {
     hammer.get('swipe').set({
         direction: Hammer.DIRECTION_ALL
     });
-    hammer.on("swipe", swiped, function(event) {
-        event.gesture.preventDefault()
-    });
+    hammer.on("swipe", swiped);
 }
 
 function centerCanvas() {
@@ -267,9 +265,9 @@ function swiped(event) {
         s.dir(0, 1); //down
     } else if (event.direction == 2) {
         s.dir(-1, 0); //left
+    } else {
+        event.gesture.preventDefault();
     }
-    // Didn't prevent default swipe behavior
-    //return false;
 }
 
 function draw() {
