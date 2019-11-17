@@ -114,7 +114,7 @@ function setup() {
     gameWidth = min(windowWidth, windowHeight, 750);
     gameHeight = gameWidth;
     screenWidth = gameWidth;
-    screenHeight = max(windowWidth, windowHeight, 950);
+    screenHeight = windowHeight;
     scl = gameWidth / 15;
     cnv = createCanvas(screenWidth, screenHeight);
     centerCanvas();
@@ -129,10 +129,6 @@ function setup() {
         if([37, 38, 39, 40].indexOf(e.keyCode) > -1) {
             e.preventDefault();
         }
-    }, false);
-    
-    window.addEventListener("touchmove", function(e) {
-        e.preventDefault();
     }, false);
     
     // set options to prevent default behaviors for swipe, pinch, etc
