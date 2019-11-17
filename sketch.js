@@ -131,7 +131,7 @@ function setup() {
         }
     }, false);
 
-    document.body.addEventListener('touchmove', function(e) {
+    window.addEventListener("touchmove", function(e) {
         e.preventDefault();
     });
 
@@ -142,6 +142,9 @@ function setup() {
         direction: Hammer.DIRECTION_ALL
     });
     hammer.on("swipe", swiped);
+    document.body.addEventListener("touchmove", function(e) {
+        e.preventDefault();
+    });
 }
 
 function centerCanvas() {
