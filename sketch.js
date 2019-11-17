@@ -131,14 +131,9 @@ function setup() {
         }
     }, false);
 
-    // set options to prevent default behaviors for swipe, pinch, etc
-    var options = {
-        preventDefaults: true
-    };
-
-    //https://editor.p5js.org/projects/HyEDRsPel
+    // https://editor.p5js.org/projects/HyEDRsPel
     // document.body registers gestures anywhere on the page
-    var hammer = new Hammer(document.body, options);
+    var hammer = new Hammer(document.body, {preventDefault: true});
     hammer.get('swipe').set({
         direction: Hammer.DIRECTION_ALL
     });
