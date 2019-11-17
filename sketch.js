@@ -51,6 +51,8 @@ var index8;
 var index9;
 var indexStop;
 
+var betweenLevels;
+
 //fonts - Duri added, does not require server
 //var bonusFont; maybe it does-- ateachey3
 let bonusTextColor;
@@ -114,8 +116,9 @@ function setup() {
     gameWidth = min(windowWidth, windowHeight, 750);
     gameHeight = gameWidth;
     screenWidth = gameWidth;
-    screenHeight = max(windowWidth, windowHeight, 950);
+    screenHeight = max(windowWidth, windowHeight, 1000);
     scl = gameWidth / 15;
+    betweenLevels = false;
     cnv = createCanvas(screenWidth, screenHeight);
     centerCanvas();
     s = new Snake();
@@ -142,9 +145,10 @@ function setup() {
         direction: Hammer.DIRECTION_ALL
     });
     hammer.on("swipe", swiped);
+
     document.body.addEventListener("touchmove", function(e) {
         e.preventDefault();
-    });
+    }, { passive: false });
 }
 
 function centerCanvas() {
@@ -264,14 +268,20 @@ function initLetters() {
 
 // ateachey3
 function swiped(event) {
-    if (event.direction == 4) {
-        s.dir(1, 0); //right
-    } else if (event.direction == 8) {
-        s.dir(0, -1); //up
-    } else if (event.direction == 16) {
-        s.dir(0, 1); //down
-    } else if (event.direction == 2) {
-        s.dir(-1, 0); //left
+    if (betweenLevels == false) {
+        if (event.direction == 4) {
+            s.dir(1, 0); //right
+        } else if (event.direction == 8) {
+            s.dir(0, -1); //up
+        } else if (event.direction == 16) {
+            s.dir(0, 1); //down
+        } else if (event.direction == 2) {
+            s.dir(-1, 0); //left
+        }
+    } else {
+        if (event.direction) {
+            betweenLevels = false;
+        }
     }
 }
 
@@ -357,6 +367,7 @@ function draw() {
             bonusText = "Aewsome!"; //TODO: replace this text with passed level text
             bonusTextLocation = createVector(gameWidth/2, gameHeight/2);
             console.log("Bonus Life!!!");
+            betweenLevels = true;
             spelledTarget++;
             // target word changes when player spells it correctly-- ateachey3
             if (display1.length == 3) {
@@ -466,6 +477,10 @@ function draw() {
     fill(213, 48, 50);
     var str = "score:" + score;
     text(str, scl * 1.5, gameHeight + scl * 2.5, scl, scl);
+    if (betweenLevels) {
+        var nextRound = "swipe to play next round";
+        text(nextRound, gameWidth/2, gameHeight + scl * 4.5);
+    }
     /**
     Maybe add "Tap here to continue in this space"-- ateachey3
     //draw words eaten
@@ -483,15 +498,23 @@ function draw() {
 }
 
 function keyPressed() {
-  if (keyCode === UP_ARROW) {
-    s.dir(0, -1);
-  } else if (keyCode === DOWN_ARROW) {
-    s.dir(0, 1);
-  } else if (keyCode === RIGHT_ARROW) {
-    s.dir(1, 0);
-  } else if (keyCode === LEFT_ARROW) {
-    s.dir(-1, 0);
-  }
+    // Maybe make this a while loop to prevent snake from moving after level
+    // ends
+    if (betweenLevels == false) {
+        if (keyCode === UP_ARROW) {
+            s.dir(0, -1);
+        } else if (keyCode === DOWN_ARROW) {
+            s.dir(0, 1);
+        } else if (keyCode === RIGHT_ARROW) {
+            s.dir(1, 0);
+        } else if (keyCode === LEFT_ARROW) {
+            s.dir(-1, 0);
+        }
+    } else {
+        if (keyCode == ENTER) {
+            betweenLevels = false;
+        }
+    }
 }
 
 //source code that is the basis of findWord function: https://johnresig.com/blog/dictionary-lookups-in-javascript/
