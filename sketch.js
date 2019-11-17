@@ -131,13 +131,15 @@ function setup() {
         }
     }, false);
 
-    // https://editor.p5js.org/projects/HyEDRsPel
+    //https://editor.p5js.org/projects/HyEDRsPel
     // document.body registers gestures anywhere on the page
-    var hammer = new Hammer(document.body, {drag_block_vertical: true});
+    var hammer = new Hammer(document.body);
     hammer.get('swipe').set({
         direction: Hammer.DIRECTION_ALL
     });
-    hammer.on("swipe", swiped);
+    hammer.on("swipe", swiped, function(event) {
+        event.gesture.preventDefault()
+    });
 }
 
 function centerCanvas() {
