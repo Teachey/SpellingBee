@@ -133,7 +133,7 @@ function setup() {
 
     // https://editor.p5js.org/projects/HyEDRsPel
     // document.body registers gestures anywhere on the page
-    var hammer = new Hammer(document.body, {preventDefault: true});
+    var hammer = new Hammer(document.body, {drag_block_vertical: true});
     hammer.get('swipe').set({
         direction: Hammer.DIRECTION_ALL
     });
