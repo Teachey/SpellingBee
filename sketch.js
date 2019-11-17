@@ -131,6 +131,10 @@ function setup() {
         }
     }, false);
 
+    document.body.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+    });
+
     //https://editor.p5js.org/projects/HyEDRsPel
     // document.body registers gestures anywhere on the page
     var hammer = new Hammer(document.body);
@@ -265,8 +269,6 @@ function swiped(event) {
         s.dir(0, 1); //down
     } else if (event.direction == 2) {
         s.dir(-1, 0); //left
-    } else {
-        event.gesture.preventDefault();
     }
 }
 
