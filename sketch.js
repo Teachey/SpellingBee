@@ -1,20 +1,11 @@
 var s;
 
-
-var scl; //= 50; //change this to change the size of the letters
-var gameWidth; //= 750; //this is set by width of iPhone 7
-var gameHeight; //= 750; //change this to change the height of the playing space
-var screenWidth; //= 750; //width of iPhone 7
-var screenHeight; //= 1334; //height of iPhone 7
-var cnv;
-
-/**
 var scl;
 var gameWidth;
 var gameHeight;
 var screenWidth;
 var screenHeight;
-**/
+var cnv;
 
 //letter positions
 var possibleLetterPositions = [];
@@ -25,7 +16,7 @@ var eatenLetterPositions = [];
 var uneatenLetters = [];
 var eatenLetters = [];
 var eatenLettersInWord = [];
-var currentString = ""; //TODO: this could be local to function
+var currentString = "";
 var prevNumLettersEaten = 0;
 var wordsEaten = [];
 var justEaten;
@@ -35,8 +26,8 @@ var vowels = ["a", "e", "i", "o", "u"];
 var highFreqLetters = ["d", "g", "l", "n", "r", "s", "t"];
 var medFreqLetters = ["b", "c", "f", "h", "m", "p", "v", "y"];
 var lowFreqLetters = ["z", "x", "q", "j", "k"];
-var NUM_CONSONANTS = 2; //change this to change the number of consonants
-var NUM_VOWELS = 2; //change this to change the number of vowels
+var NUM_CONSONANTS = 2;
+var NUM_VOWELS = 2;
 
 //dictionary variables
 var dictionary = {};
@@ -139,7 +130,11 @@ function setup() {
             e.preventDefault();
         }
     }, false);
-
+    
+    window.addEventListener("touchmove", function(e) {
+        e.preventDefault();
+    }, false);
+    
     // set options to prevent default behaviors for swipe, pinch, etc
     // no obvious difference-- ateachey3
     var options = {
