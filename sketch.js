@@ -72,24 +72,24 @@ var bonusFading = false;
 
 function preload() {
     //load images - Duri added, requires server
-    wingsLeft = loadImage('assets/wingsLeft.png');
-    wingsRight = loadImage('assets/wingsRight.png');
-    wingsUp = loadImage('assets/wingsUp.png');
-    wingsDown = loadImage('assets/wingsDown.png');
-    beeHeadUp = loadImage('assets/beeHeadRoundUp.png');
-    beeHeadDown = loadImage('assets/beeHeadRoundDown.png');
-    beeHeadLeft = loadImage('assets/beeHeadRound.png');
-    beeHeadRight = loadImage('assets/beeHeadRoundRight.png');
-    easyFlower = loadImage('assets/tulip.png');
-    medFlower = loadImage('assets/fourPetalFlower.png');
-    hardFlower = loadImage('assets/manyPetalFlower.png');
-    honeycomb = loadImage('assets/honeycomb.png');
+    wingsLeft = loadImage('wingsLeft.png');
+    wingsRight = loadImage('wingsRight.png');
+    wingsUp = loadImage('wingsUp.png');
+    wingsDown = loadImage('wingsDown.png');
+    beeHeadUp = loadImage('beeHeadRoundUp.png');
+    beeHeadDown = loadImage('beeHeadRoundDown.png');
+    beeHeadLeft = loadImage('beeHeadRound.png');
+    beeHeadRight = loadImage('beeHeadRoundRight.png');
+    easyFlower = loadImage('tulip.png');
+    medFlower = loadImage('fourPetalFlower.png');
+    hardFlower = loadImage('manyPetalFlower.png');
+    honeycomb = loadImage('honeycomb.png');
     //load sounds - Duri added, requires sercer
-    letterGrab = loadSound('assets/letterGrab.wav');
-    wordBank = loadSound('assets/wordBank.wav');
-    trash = loadSound('assets/trash.wav');
-    bonus = loadSound('assets/bonus.wav');
-    wall = loadSound('assets/wall.wav');
+    letterGrab = loadSound('letterGrab.wav');
+    wordBank = loadSound('wordBank.wav');
+    trash = loadSound('trash.wav');
+    bonus = loadSound('bonus.wav');
+    wall = loadSound('wall.wav');
 
     dictArr = dict.split('\n').sort(function(a,b) {
         return a.length - b.length;
