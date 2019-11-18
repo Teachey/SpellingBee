@@ -1,11 +1,10 @@
-var s;
-
-var scl;
-var gameWidth;
-var gameHeight;
-var screenWidth;
-var screenHeight;
-var cnv;
+var s; // this is the snake
+var scl; // this is the letter size
+var gameWidth; // this is the width of the area where the snake can move
+var gameHeight; // this is the height of the area where the snake can move
+var screenWidth; // this is the width of the window (max 750)
+var screenHeight; // this is the height of the window (max 1000)
+var cnv; // this is the entire canvas
 
 //letter positions
 var possibleLetterPositions = [];
@@ -16,7 +15,7 @@ var eatenLetterPositions = [];
 var uneatenLetters = [];
 var eatenLetters = [];
 var eatenLettersInWord = [];
-var currentString = ""; //TODO: this could be local to function
+var currentString = "";
 var prevNumLettersEaten = 0;
 var wordsEaten = [];
 var justEaten;
@@ -51,11 +50,18 @@ var index8;
 var index9;
 var indexStop;
 
+// true when the player has just completed a round
 var betweenLevels;
 
+//art - Duri added, requires server
+var beeHeadRight, beeHeadDown, beeHeadUp, beeHeadLeft, easyFlower, medFlower, hardFlower, honeycomb, wingsLeft, wingsRight, wingsUp, wingsDown;
+
+//sounds - Duri added, requires server
+var letterGrab, wordBank, trash, bonus, wall;
+var textToSpeech;
+
 //fonts - Duri added, does not require server
-//var bonusFont; maybe it does-- ateachey3
-let bonusTextColor;
+var bonusTextColor;
 var count = 0;
 var fade = 0;
 var fadeAmount = 1;
@@ -65,14 +71,26 @@ var bonusTextLocation;
 var bonusFading = false;
 
 function preload() {
-    //load font - Duri added, does not require server
-    //maybe textFont does require server-- ateachey3
-    //bonusFont = textFont('Arial');
-    /**
-    Uncaught TypeError: Cannot read property '_setProperty' of undefined
-    at h.p.textFont (p5.min.js:3)
-    at preload (sketch.js:537)
-    **/
+    //load images - Duri added, requires server
+    wingsLeft = loadImage('assets/wingsLeft.png');
+    wingsRight = loadImage('assets/wingsRight.png');
+    wingsUp = loadImage('assets/wingsUp.png');
+    wingsDown = loadImage('assets/wingsDown.png');
+    beeHeadUp = loadImage('assets/beeHeadRoundUp.png');
+    beeHeadDown = loadImage('assets/beeHeadRoundDown.png');
+    beeHeadLeft = loadImage('assets/beeHeadRound.png');
+    beeHeadRight = loadImage('assets/beeHeadRoundRight.png');
+    easyFlower = loadImage('assets/tulip.png');
+    medFlower = loadImage('assets/fourPetalFlower.png');
+    hardFlower = loadImage('assets/manyPetalFlower.png');
+    honeycomb = loadImage('assets/honeycomb.png');
+    //load sounds - Duri added, requires sercer
+    letterGrab = loadSound('assets/letterGrab.wav');
+    wordBank = loadSound('assets/wordBank.wav');
+    trash = loadSound('assets/trash.wav');
+    bonus = loadSound('assets/bonus.wav');
+    wall = loadSound('assets/wall.wav');
+
     dictArr = dict.split('\n').sort(function(a,b) {
         return a.length - b.length;
     });
@@ -121,22 +139,20 @@ function setup() {
     betweenLevels = false;
     cnv = createCanvas(screenWidth, screenHeight);
     centerCanvas();
+    bonusTextColor = color(204, 71 , 75);
     s = new Snake();
-    frameRate(8);
+    frameRate(5);
     populatePossibleLetterPos();
     initLetters();
+    textToSpeech = new p5.Speech(); // speech synthesis object - Duri added, requires server
 
-    // prevents window from scrolling -- ateachey3
+    // prevents window from scrolling on desktop -- ateachey3
     window.addEventListener("keydown", function(e) {
         // arrow keys
         if([37, 38, 39, 40].indexOf(e.keyCode) > -1) {
             e.preventDefault();
         }
     }, false);
-
-    window.addEventListener("touchmove", function(e) {
-        e.preventDefault();
-    });
 
     //https://editor.p5js.org/projects/HyEDRsPel
     // document.body registers gestures anywhere on the page
@@ -210,11 +226,8 @@ function addLetter() {
     uneatenLetters.push(letter);
   } else { //Duri edited this else clause - does NOT require server
     //infrequently but randomly - put a $ or @ in place of a letter
-    //TODO: make $ and @ more inuitive images instead of letters
     var randomNumber = Math.floor(Math.random()*15);
-    if (randomNumber == 1) {
-      uneatenLetters.push("@");
-    } else if (randomNumber >= 2 && randomNumber < 5) {
+    if (randomNumber > 0 && randomNumber < 4) {
       uneatenLetters.push("$");
     } else {
       //if the eaten letter isn't in the target word and a $ or @ isn't randomly added, replace it with a letter of its same type
@@ -247,6 +260,7 @@ function initLetters() {
         pickLocation();
     }
     for (var i = 0; i < NUM_CONSONANTS; i++) {
+      // duplicate code
       var index = Math.floor(Math.random()*21); //num consonants in english language
       var letter;
       if (index >= 0 && index < 3) {
@@ -266,8 +280,9 @@ function initLetters() {
     }
 }
 
-// ateachey3
+// enables touch screen-- ateachey3
 function swiped(event) {
+    // I wanted this to be a while loop but the game would freeze-- ateachey3
     if (betweenLevels == false) {
         if (event.direction == 4) {
             s.dir(1, 0); //right
@@ -285,15 +300,32 @@ function swiped(event) {
     }
 }
 
+function keyPressed() {
+    if (betweenLevels == false) {
+        if (keyCode === UP_ARROW) {
+            s.dir(0, -1);
+        } else if (keyCode === DOWN_ARROW) {
+            s.dir(0, 1);
+        } else if (keyCode === RIGHT_ARROW) {
+            s.dir(1, 0);
+        } else if (keyCode === LEFT_ARROW) {
+            s.dir(-1, 0);
+        }
+    } else {
+        if (keyCode == ENTER) {
+            betweenLevels = false;
+        }
+    }
+}
+
 function draw() {
-  clear();
-  fill(51);
+  fill(147, 158, 119);
   background(220, 220, 220);
   rect(0, 0, gameWidth, gameHeight);
   for (var i = 0; i < letterPositions.length; i++) {
     if (s.eat(letterPositions[i])) {
       letterPositions.splice(i, 1);
-      if (uneatenLetters[i] == "$" || uneatenLetters[i] == "@") {
+      if (uneatenLetters[i] == "$") {
         //don't add $ or @ to the tail
         s.total--;
         s.eaten.splice(s.eaten.length-1, 1); //Duri edited this line - does NOT require server
@@ -317,30 +349,16 @@ function draw() {
         }
         //sort values in letterstoRemove - have to go in reverse order so we don't mess up the indices as we go
         lettersToRemove.sort(function(a,b){ return b - a; });
-        if (uneatenLetters[i] == "$") {
-          //actually remove the letters we identified
-          for (var j = 0; j < lettersToRemove.length; j++) {
-            s.eaten.splice(lettersToRemove[j], 1);
-            s.tail.splice(lettersToRemove[j], 1); //Duri added this line - does NOT require server
-            eatenLetters.splice(lettersToRemove[j], 1);
-            s.total--;
-          }
-        } else if (uneatenLetters[i] == "@") {
-          var nonWordLettersToRemove = [];
-          for (var j = 0; j < eatenLetters.length; j++) {
-            if (!lettersToRemove.includes(j)) {
-              nonWordLettersToRemove.push(j);
-            }
-          }
-          nonWordLettersToRemove.sort(function(a,b){ return b - a; });
-          for (var j = 0; j < nonWordLettersToRemove.length; j++) {
-            s.eaten.splice(nonWordLettersToRemove[j], 1);
-            s.tail.splice(nonWordLettersToRemove[j], 1); //Duri added - does NOT require server
-            eatenLetters.splice(nonWordLettersToRemove[j], 1);
-            s.total--;
-          }
+        wordBank.play();
+        //actually remove the letters we identified
+        for (var j = 0; j < lettersToRemove.length; j++) {
+          s.eaten.splice(lettersToRemove[j], 1);
+          s.tail.splice(lettersToRemove[j], 1); //Duri added this line - does NOT require server
+          eatenLetters.splice(lettersToRemove[j], 1);
+          s.total--;
         }
       } else {
+        letterGrab.play();
         eatenLetters.push(uneatenLetters[i]);
       }
       uneatenLetters.splice(i, 1);
@@ -351,11 +369,12 @@ function draw() {
         currentString += eatenLetters[i];
       }
       if (currentString.length > 2) {
-        var substrings = getAllSubstrings(currentString,3);
+        var substrings = getAllSubstrings(currentString, 3);
         for (var i = 0; i < substrings.length; i++) {
           if (!wordsEaten.includes(substrings[i])) {
             var wordFound = findWord(substrings[i].split(''));
             if (wordFound) { //Duri edited text in this if clause
+              bonus.play(); 
               bonusFading = true;
               bonusText = "+" + addToScore;
               bonusTextLocation = createVector(s.x, s.y);
@@ -364,9 +383,8 @@ function draw() {
         }
         if (substrings.includes(display1)) {
             bonusFading = true;
-            bonusText = "Aewsome!"; //TODO: replace this text with passed level text
+            bonusText = "Awesome!"; //TODO: replace this text with passed level text
             bonusTextLocation = createVector(gameWidth/2, gameHeight/2);
-            console.log("Bonus Life!!!");
             betweenLevels = true;
             spelledTarget++;
             // target word changes when player spells it correctly-- ateachey3
@@ -401,7 +419,7 @@ function draw() {
         prevNumLettersEaten = eatenLetters.length;
       }
 
-      justEaten = eatenLetters[eatenLetters.length-1];
+      justEaten = eatenLetters[eatenLetters.length - 1];
       addLetter();
 
 
@@ -426,57 +444,43 @@ function draw() {
         clearThings();
         initLetters();
     }
-    else { //target word only changes when bonus life is used-- ateachey3
+    else {
         spelledTarget--;
         eatenLetters = [];
-        /**
-        if (display1.length == 3) {
-            display1 = random(dictArr.slice(index4, index5));
-        }
-        else if (display1.length == 4) {
-            display1 = random(dictArr.slice(index5, index6));
-        }
-        else if (display1.length == 5) {
-            display1 = random(dictArr.slice(index6, index7));
-        }
-        else if (display1.length == 6) {
-            display1 = random(dictArr.slice(index7, index8));
-        }
-        else if (display1.length == 7) {
-            display1 = random(dictArr.slice(index8, index9));
-        }
-        else if (display1.length == 8) {
-            display1 = random(dictArr.slice(index9, indexStop));
-        }
-        else if (display1.length == 9) {
-            display1 = random(dictArr.slice(index3, index4));
-        }
-        **/
     }
   }
 
   fill(255, 0, 100);
   //draw the uneaten letters
   for (var i = 0; i < letterPositions.length; i++) {
-    textAlign(CENTER);
-    textSize(scl);
-    if (uneatenLetters[i] == "$" || uneatenLetters[i] == "@") {
-        fill(213, 48, 50);
+    if (uneatenLetters[i] == "$") {
+      image(honeycomb, letterPositions[i].x, letterPositions[i].y, scl, scl);
+    } else if (highFreqLetters.includes(uneatenLetters[i]) || vowels.includes(uneatenLetters[i])) {
+      image(easyFlower, letterPositions[i].x, letterPositions[i].y, scl, scl);
+    } else if (medFreqLetters.includes(uneatenLetters[i])) {
+      image(medFlower, letterPositions[i].x, letterPositions[i].y, scl, scl);
     } else {
-      fill(255, 255, 255);
+      image(hardFlower, letterPositions[i].x, letterPositions[i].y, scl, scl);
     }
-    text(uneatenLetters[i], letterPositions[i].x, letterPositions[i].y, scl, scl);
+
+    fill(51, 51, 51);
+    textAlign(CENTER, CENTER);
+    textSize(scl/2);
+    if (uneatenLetters[i] !== "$") {
+      text(uneatenLetters[i].toUpperCase(), letterPositions[i].x + 2.5, letterPositions[i].y, scl, scl);
+    }
   }
     // the target words will go inside this box-- ateachey3
-    fill(213, 48, 50);
+    fill(204, 71 , 75);
     rect(0, gameHeight, gameWidth, scl * 2);
 
     fill(255);
-    text(display1, gameWidth/2, gameHeight + scl * 1.5);
+    text(display1, gameWidth/2, gameHeight + scl);
 
     fill(213, 48, 50);
-    var str = "score:" + score;
-    text(str, scl * 1.5, gameHeight + scl * 2.5, scl, scl);
+    var str = `Score: ${score}`;
+    text(str, scl * 1.5, gameHeight + scl * 2.5);
+
     if (betweenLevels) {
         var nextRound = "swipe to play next round";
         text(nextRound, gameWidth/2, gameHeight + scl * 4.5);
@@ -492,28 +496,8 @@ function draw() {
     **/
     s.update();
     s.show();
-    // if (bonusFading) { //Duri added this - does not require server
-    //     bonusTextDisplay();//maybe it does-- ateachey3
-    // }
-}
-
-function keyPressed() {
-    // Maybe make this a while loop to prevent snake from moving after level
-    // ends
-    if (betweenLevels == false) {
-        if (keyCode === UP_ARROW) {
-            s.dir(0, -1);
-        } else if (keyCode === DOWN_ARROW) {
-            s.dir(0, 1);
-        } else if (keyCode === RIGHT_ARROW) {
-            s.dir(1, 0);
-        } else if (keyCode === LEFT_ARROW) {
-            s.dir(-1, 0);
-        }
-    } else {
-        if (keyCode == ENTER) {
-            betweenLevels = false;
-        }
+    if (bonusFading) { //Duri added this, does require server
+        bonusTextDisplay();
     }
 }
 
@@ -531,9 +515,18 @@ function findWord(letters) {
         // And see if it's in the dictionary
         if (dictionary[word]) {
           if(!wordsEaten.includes(word)) {
-          wordsEaten.push(word);
-          for (var j = 0; j < word.length; j++) {
-              score = score + letterHash[word[j].toUpperCase()];
+            textToSpeech.speak(word); // say something - Duri added this, requires server
+            wordsEaten.push(word);
+            addToScore = 0;
+            for (var j = 0; j < word.length; j++) {
+                if (lowFreqLetters.includes(word[j])) {
+                  addToScore += 1;
+                } else if (medFreqLetters.includes(word[j])) {
+                  addToScore += 5;
+                } else {
+                  addToScore += 10;
+                }
+                score += addToScore;
             }
             return word;
           }
@@ -543,15 +536,12 @@ function findWord(letters) {
     }
 }
 
-/**
-//Duri added this method - does not require server
-// maybe it does-- ateachey3
+//Duri added this method requires server
 function bonusTextDisplay() {
   bonusTextColor.setAlpha(fade);
   fill(bonusTextColor)
-  textFont(bonusFont);
   textSize(scl);
-  text(bonusText, bonusTextLocation.x, bonusTextLocation.y, 40, 40);
+  text(bonusText, bonusTextLocation.x, bonusTextLocation.y, scl, scl);
   if (goingUp) {
     if (fade < 255) {
       fade = fade + 30;
@@ -568,6 +558,4 @@ function bonusTextDisplay() {
       bonusFading = false;
     }
   }
-  textFont('Arial');
 }
-**/

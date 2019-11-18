@@ -33,10 +33,10 @@ function Snake() {
       var pos = this.tail[i];
       var d = dist(this.x, this.y, pos.x, pos.y);
       if (d < 1) {
-        console.log('starting over');
         this.total = 0;
         this.eaten = [];
         this.tail = [];
+        wall.play(); //Duri added this line 
         return true;
       }
     }
@@ -59,18 +59,64 @@ function Snake() {
   }
 
   this.show = function () {
-    for (var i = 0; i < this.eaten.length; i++) {
-      textAlign(CENTER);
-      textSize(scl);
-      if (eatenLettersInWord.includes(i)) {
-        fill(255, 128, 0);
+      //TODO: fix code below so nothing is hardcoded
+      if (this.xspeed == 0 && this.yspeed == -1) {
+        //moving up
+        fill(0, 0, 0);
+        image(wingsUp, this.x, this.y + scl*(3/4), scl, scl);
+        image(beeHeadUp, this.x, this.y, scl, scl);
+      } else if (this.xspeed == -1 && this.yspeed == 0) {
+        //moving left
+        fill(0, 0, 0);
+        image(wingsLeft, this.x + scl*(3/4), this.y, scl, scl);
+        image(beeHeadLeft, this.x, this.y, scl, scl);
+      } else if (this.xspeed == 0 && this.yspeed == 1) {
+        //moving down
+        fill(0, 0, 0);
+        image(wingsDown, this.x, this.y - scl*(3/4), scl, scl);
+        image(beeHeadDown, this.x, this.y, scl, scl);
       } else {
-         fill(255);
+        //moving right
+        fill (0, 0, 0);
+        image(wingsRight, this.x - scl*(3/4), this.y, scl, scl);
+        image(beeHeadRight, this.x, this.y, scl, scl);
       }
-      text(eatenLetters[i], this.tail[i].x, this.tail[i].y, scl, scl);
-    }
-    fill(255);
-    rect(this.x, this.y, scl, scl);
-
+      for (var i = 0; i < this.eaten.length; i++) {
+        textAlign(CENTER, CENTER);
+        textSize(scl/2);
+        fill(255,223,0);
+        if (eatenLettersInWord.includes(i)) {
+          stroke(0, 0, 0);
+          strokeWeight(4);
+        } else {
+          strokeWeight(0);
+        }
+        //TODO: fix code below so nothing is hardcoded
+        if (this.xspeed == 0 && this.yspeed == -1) {
+          //moving up
+          circle(this.tail[i].x + scl/2, this.tail[i].y + scl*(3/4) + scl/2, scl);
+          strokeWeight(0);
+          fill(0, 0, 0);
+          text(eatenLetters[i].toUpperCase(), this.tail[i].x, this.tail[i].y + scl*(3/4), scl, scl);
+        } else if (this.xspeed == -1 && this.yspeed == 0) {
+          //moving left
+          circle(this.tail[i].x + scl*(3/4) + scl/2, this.tail[i].y + scl/2, scl);
+          strokeWeight(0);
+          fill(0, 0, 0);
+          text(eatenLetters[i].toUpperCase(), this.tail[i].x + scl*(3/4), this.tail[i].y, scl, scl);
+        } else if (this.xspeed == 0 && this.yspeed == 1) {
+          //moving down
+          circle(this.tail[i].x + scl/2, this.tail[i].y - scl*(3/4) + scl/2, scl);
+          strokeWeight(0);
+          fill(0, 0, 0);
+          text(eatenLetters[i].toUpperCase(), this.tail[i].x, this.tail[i].y - scl*(3/4), scl, scl);
+        } else {
+          //moving right
+          circle(this.tail[i].x + scl/2 - scl*(3/4), this.tail[i].y + scl/2, scl);
+          strokeWeight(0);
+          fill(0, 0, 0);
+          text(eatenLetters[i].toUpperCase(), this.tail[i].x - scl*(3/4), this.tail[i].y, scl, scl);
+        }
+      }
   }
 }
