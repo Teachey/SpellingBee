@@ -54,7 +54,7 @@ var indexStop;
 var betweenLevels;
 
 //art - Duri added, requires server
-var beeHeadRight, beeHeadDown, beeHeadUp, beeHeadLeft, easyFlower, medFlower, hardFlower, honeycomb, wingsLeft, wingsRight, wingsUp, wingsDown;
+var beeHeadRight, beeHeadDown, beeHeadUp, beeHeadLeft, easyFlower, medFlower, hardFlower, honeycomb, wingsLeft, wingsRight, wingsUp, wingsDown, grass, bigGrass;
 
 //sounds - Duri added, requires server
 var letterGrab, wordBank, trash, bonus, wall;
@@ -72,6 +72,8 @@ var bonusFading = false;
 
 function preload() {
     //load images - Duri added, requires server
+    grass = loadImage('grass.png');
+    bigGrass = loadImage('bigGrass.png');
     wingsLeft = loadImage('wingsLeft.png');
     wingsRight = loadImage('wingsRight.png');
     wingsUp = loadImage('wingsUp.png');
@@ -131,11 +133,11 @@ function preload() {
 }
 
 function setup() {
-    gameWidth = min(windowWidth, windowHeight, 750);
-    gameHeight = gameWidth;
+    gameWidth = min(windowWidth, windowHeight, 750); //I think this might ma
+    scl = gameWidth / 15;
+    gameHeight = scl * ceil(windowHeight/scl) - scl * 4;
     screenWidth = gameWidth;
     screenHeight = max(windowWidth, windowHeight, 1000);
-    scl = gameWidth / 15;
     betweenLevels = false;
     cnv = createCanvas(screenWidth, screenHeight);
     centerCanvas();
@@ -319,9 +321,20 @@ function keyPressed() {
 }
 
 function draw() {
-  fill(147, 158, 119);
-  background(220, 220, 220);
+  noStroke();
+  background(0, 165, 81);
+  fill(0, 165, 81);
   rect(0, 0, gameWidth, gameHeight);
+  image(bigGrass, 0, screenHeight - scl*4, gameWidth, scl*4);
+  for (var i = 0; i < gameWidth/scl; i++) {
+    for (var j = 0; j < gameHeight/scl; j++) {
+      if (i % 2 == 0) {
+        if (j % 2 == 0) {
+          image(grass, scl*i, scl*j, scl, scl);
+        }
+      }
+    }
+  }
   for (var i = 0; i < letterPositions.length; i++) {
     if (s.eat(letterPositions[i])) {
       letterPositions.splice(i, 1);
@@ -463,21 +476,21 @@ function draw() {
       image(hardFlower, letterPositions[i].x, letterPositions[i].y, scl, scl);
     }
 
-    fill(51, 51, 51);
+    fill(255);
     textAlign(CENTER, CENTER);
     textSize(scl/2);
     if (uneatenLetters[i] !== "$") {
       text(uneatenLetters[i].toUpperCase(), letterPositions[i].x + 2.5, letterPositions[i].y, scl, scl);
     }
   }
-    // the target words will go inside this box-- ateachey3
-    fill(204, 71 , 75);
-    rect(0, gameHeight, gameWidth, scl * 2);
 
+    //draw target word
     fill(255);
-    text(display1, gameWidth/2, gameHeight + scl);
+    textSize(scl);
+    text(display1.toUpperCase(), gameWidth/2, gameHeight + scl*2);
 
-    fill(213, 48, 50);
+    //draw score
+    textSize(scl*.7);
     var str = `Score: ${score}`;
     text(str, scl * 1.5, gameHeight + scl * 2.5);
 
