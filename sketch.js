@@ -133,11 +133,12 @@ function preload() {
 }
 
 function setup() {
-    gameWidth = min(windowWidth, windowHeight, 750); //I think this might ma
+    gameWidth = min(windowWidth, windowHeight, 750);
     scl = gameWidth / 15;
     gameHeight = scl * ceil(windowHeight/scl) - scl * 4;
     screenWidth = gameWidth;
-    screenHeight = max(windowWidth, windowHeight, 1000);
+    screenHeight = windowHeight;
+    //screenHeight = max(windowWidth, windowHeight, 1000); //not sure that this works
     betweenLevels = false;
     cnv = createCanvas(screenWidth, screenHeight);
     centerCanvas();
