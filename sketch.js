@@ -54,7 +54,7 @@ var indexStop;
 var betweenLevels;
 
 //art - Duri added, requires server
-var beeHeadRight, beeHeadDown, beeHeadUp, beeHeadLeft, easyFlower, medFlower, hardFlower, honeycomb, wingsLeft, wingsRight, wingsUp, wingsDown, grass, bigGrass;
+var beeHeadRight, beeHeadDown, beeHeadUp, beeHeadLeft, easyFlower, medFlower, hardFlower, honeycomb, grass, bigGrass;
 
 //sounds - Duri added, requires server
 var letterGrab, wordBank, trash, bonus, wall;
@@ -74,10 +74,6 @@ function preload() {
     //load images - Duri added, requires server
     grass = loadImage('grass.png');
     bigGrass = loadImage('bigGrass.png');
-    wingsLeft = loadImage('wingsLeft.png');
-    wingsRight = loadImage('wingsRight.png');
-    wingsUp = loadImage('wingsUp.png');
-    wingsDown = loadImage('wingsDown.png');
     beeHeadUp = loadImage('beeHeadRoundUp.png');
     beeHeadDown = loadImage('beeHeadRoundDown.png');
     beeHeadLeft = loadImage('beeHeadRound.png');
@@ -144,6 +140,7 @@ function setup() {
     centerCanvas();
     bonusTextColor = color(204, 71 , 75);
     s = new Snake();
+   // s.eat(createVector(0, 0));
     frameRate(5);
     populatePossibleLetterPos();
     initLetters();

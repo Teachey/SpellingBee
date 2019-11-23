@@ -58,29 +58,66 @@ function Snake() {
     this.y = constrain(this.y, 0, gameHeight - scl);
   }
 
+  this.drawBeeHeadAndTail = function(img, triX1Off, triY1Off, triX2Off, triY2Off, triX3Off, triY3Off) {
+    image(img, this.x, this.y, scl, scl);
+    fill(0, 0, 0);
+    if (this.tail.length > 0) {
+      triangle(this.tail[0].x + triX1Off, this.tail[0].y + triY1Off, this.tail[0].x + triX2Off, this.tail[0].y + triY2Off, this.tail[0].x + triX3Off, this.tail[0].y + triY3Off);
+    } else {
+      triangle(this.x + triX1Off, this.y + triY1Off, this.x + triX2Off, this.y + triY2Off, this.x + triX3Off, this.y + triY3Off);
+    }
+  }
+
+  this.drawBeeWings = function(xOffset1, yOffset1, xOffset2, yOffset2, circXOff, circYOff) {
+    //draw wings overlapping with bee tail
+    if (this.tail.length > 0) {
+      fill(115, 194, 251, 127);
+      ellipse(this.tail[this.tail.length-1].x + xOffset1, this.tail[this.tail.length-1].y + yOffset1, scl, scl/2);
+      ellipse(this.tail[this.tail.length-1].x + xOffset2, this.tail[this.tail.length-1].y + yOffset2, scl, scl/2);
+    } else {
+      //draw initial bee body
+      fill(255,223,0);
+      circle(this.x + circXOff, this.y + circYOff, scl);
+      fill(115, 194, 251, 127);
+      ellipse(this.x + xOffset1, this.y + yOffset1, scl, scl/2);
+      ellipse(this.x + xOffset2, this.y + yOffset2, scl, scl/2);
+    }
+  }
+
   this.show = function () {
-      //TODO: fix code below so nothing is hardcoded
+      //TODO: a way to minimize the number of conditionals?
+      //Draw head and stinger
       if (this.xspeed == 0 && this.yspeed == -1) {
         //moving up
-        fill(0, 0, 0);
-        image(wingsUp, this.x, this.y + scl*(3/4), scl, scl);
-        image(beeHeadUp, this.x, this.y, scl, scl);
+        if (this.tail.length > 0) {
+          this.drawBeeHeadAndTail(beeHeadUp, scl/2 - 10, scl*.8, scl/2 + 10, scl*.8, scl/2, scl*.8 + scl/2 - 5);
+        } else {
+          this.drawBeeHeadAndTail(beeHeadUp, scl/2 - 10, scl + scl*.8, scl/2 + 10, scl + scl*.8, scl/2, scl + scl*.8 + scl/2 - 5);
+        }
       } else if (this.xspeed == -1 && this.yspeed == 0) {
         //moving left
-        fill(0, 0, 0);
-        image(wingsLeft, this.x + scl*(3/4), this.y, scl, scl);
-        image(beeHeadLeft, this.x, this.y, scl, scl);
+        if (this.tail.length > 0) {
+          this.drawBeeHeadAndTail(beeHeadLeft, scl*.8, scl/2 - 10, scl*.8, scl/2 + 10, scl*.8 + scl/2 - 5, scl/2);
+        } else {
+          this.drawBeeHeadAndTail(beeHeadLeft, scl + scl*.8, scl/2 - 10, scl + scl*.8, scl/2 + 10, scl + scl*.8 + scl/2 - 5, scl/2);
+        }
       } else if (this.xspeed == 0 && this.yspeed == 1) {
         //moving down
-        fill(0, 0, 0);
-        image(wingsDown, this.x, this.y - scl*(3/4), scl, scl);
-        image(beeHeadDown, this.x, this.y, scl, scl);
+        if (this.tail.length > 0) {
+          this.drawBeeHeadAndTail(beeHeadDown, scl/2 - 10, -scl*.8 + scl, scl/2 + 10, -scl*.8 + scl, scl/2, -scl*.8 + scl- scl/2 + 5);
+        } else {
+          this.drawBeeHeadAndTail(beeHeadDown, scl/2 - 10, -scl*.8, scl/2 + 10, -scl*.8, scl/2, -scl*.8 - scl/2 + 5);
+        }
       } else {
         //moving right
-        fill (0, 0, 0);
-        image(wingsRight, this.x - scl*(3/4), this.y, scl, scl);
-        image(beeHeadRight, this.x, this.y, scl, scl);
+        if (this.tail.length > 0) {
+          this.drawBeeHeadAndTail(beeHeadRight, -scl*.8 + scl, scl/2 + 10, -scl*.8 + scl, scl/2 - 10, -scl*.8 + scl - scl/2 + 5, scl/2);
+        } else {
+          this.drawBeeHeadAndTail(beeHeadRight, -scl*.8, scl/2 + 10, -scl*.8, scl/2 - 10, -scl*.8 - scl/2 + 5, scl/2);
+        }
       }
+
+      //Draw tail
       for (var i = 0; i < this.eaten.length; i++) {
         textAlign(CENTER, CENTER);
         textSize(scl/2);
@@ -91,32 +128,38 @@ function Snake() {
         } else {
           strokeWeight(0);
         }
-        //TODO: fix code below so nothing is hardcoded
-        if (this.xspeed == 0 && this.yspeed == -1) {
-          //moving up
-          circle(this.tail[i].x + scl/2, this.tail[i].y + scl*(3/4) + scl/2, scl);
-          strokeWeight(0);
-          fill(0, 0, 0);
-          text(eatenLetters[i].toUpperCase(), this.tail[i].x, this.tail[i].y + scl*(3/4), scl, scl);
-        } else if (this.xspeed == -1 && this.yspeed == 0) {
-          //moving left
-          circle(this.tail[i].x + scl*(3/4) + scl/2, this.tail[i].y + scl/2, scl);
-          strokeWeight(0);
-          fill(0, 0, 0);
-          text(eatenLetters[i].toUpperCase(), this.tail[i].x + scl*(3/4), this.tail[i].y, scl, scl);
-        } else if (this.xspeed == 0 && this.yspeed == 1) {
-          //moving down
-          circle(this.tail[i].x + scl/2, this.tail[i].y - scl*(3/4) + scl/2, scl);
-          strokeWeight(0);
-          fill(0, 0, 0);
-          text(eatenLetters[i].toUpperCase(), this.tail[i].x, this.tail[i].y - scl*(3/4), scl, scl);
-        } else {
-          //moving right
-          circle(this.tail[i].x + scl/2 - scl*(3/4), this.tail[i].y + scl/2, scl);
-          strokeWeight(0);
-          fill(0, 0, 0);
-          text(eatenLetters[i].toUpperCase(), this.tail[i].x - scl*(3/4), this.tail[i].y, scl, scl);
-        }
+        circle(this.tail[i].x + scl/2, this.tail[i].y + scl/2, scl);
+        strokeWeight(0);
+        fill(0, 0, 0);
+        text(eatenLetters[i].toUpperCase(), this.tail[i].x, this.tail[i].y, scl, scl);  
       }
+
+      //Draw wings
+      if (this.xspeed == 0 && this.yspeed == -1) {
+        //moving up
+        if (this.tail.length > 0) {
+          this.drawBeeWings(scl/8, 0, scl - scl/8, 0, scl/2, scl + scl/2);
+        } else {
+          this.drawBeeWings(scl/8, scl, scl - scl/8, scl, scl/2, scl + scl/2);
+        }
+      } else if (this.xspeed == -1 && this.yspeed == 0) {
+        //moving left -- not working
+        if (this.tail.length > 0) {
+          this.drawBeeWings(0, scl/8, 0, scl - scl/8, scl + scl/2, scl/2);
+        } else {
+          this.drawBeeWings(scl, scl/8, scl, scl - scl/8, scl + scl/2, scl/2);
+        }
+      } else if (this.xspeed == 0 && this.yspeed == 1) {
+        //moving down
+        if (this.tail.length > 0) {
+          this.drawBeeWings(scl/8, scl, scl - scl/8, scl, scl/2, -scl + scl/2);
+        } else {
+          this.drawBeeWings(scl/8, 0, scl - scl/8, 0, scl/2, -scl + scl/2);
+        }
+      } else {
+        //moving right -- not working
+        this.drawBeeWings(0, scl/8, 0, scl + scl/8, -scl + scl/2, scl/2);
+      }
+      
   }
 }
