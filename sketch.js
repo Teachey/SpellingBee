@@ -25,7 +25,7 @@ var vowels = ["a", "e", "i", "o", "u"];
 var highFreqLetters = ["d", "g", "l", "n", "r", "s", "t"];
 var medFreqLetters = ["b", "c", "f", "h", "m", "p", "v", "y"];
 var lowFreqLetters = ["z", "x", "q", "j", "k"];
-var NUM_CONSONANTS = 2;
+var NUM_CONSONANTS = 4;
 var NUM_VOWELS = 2;
 
 //dictionary variables
@@ -225,12 +225,12 @@ function addLetter() {
     var letter = justEaten;
     uneatenLetters.push(letter);
   } else { 
-    //infrequently but randomly - put a $ or @ in place of a letter
+    //infrequently but randomly - put a word bank in place of a letter
     var randomNumber = Math.floor(Math.random()*15);
     if (randomNumber > 0 && randomNumber < 4) {
       uneatenLetters.push("$");
     } else {
-      //if the eaten letter isn't in the target word and a $ or @ isn't randomly added, replace it with a letter of its same type
+      //if the eaten letter isn't in the target word and a wordbank isn't randomly added, replace it with a letter of its same type
       if (vowels.includes(justEaten)) {
           //replace vowel
           var letter = vowels[Math.floor(Math.random()*vowels.length)]
@@ -490,7 +490,7 @@ function draw() {
     //draw score
     textSize(scl*.7);
     var str = `Score: ${score}`;
-    text(str, scl * 1.5, gameHeight + scl * 2.5);
+    text(str, scl * 2.5, gameHeight + scl * 2.5);
 
     if (betweenLevels) {
         var nextRound = "swipe to play next round";
