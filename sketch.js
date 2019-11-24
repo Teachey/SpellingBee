@@ -53,14 +53,14 @@ var indexStop;
 // true when the player has just completed a round
 var betweenLevels;
 
-//art - Duri added, requires server
+//art
 var beeHeadRight, beeHeadDown, beeHeadUp, beeHeadLeft, easyFlower, medFlower, hardFlower, honeycomb, grass, bigGrass;
 
-//sounds - Duri added, requires server
+//sounds
 var letterGrab, wordBank, trash, bonus, wall;
 var textToSpeech;
 
-//fonts - Duri added, does not require server
+//fonts 
 var bonusTextColor;
 var count = 0;
 var fade = 0;
@@ -71,7 +71,7 @@ var bonusTextLocation;
 var bonusFading = false;
 
 function preload() {
-    //load images - Duri added, requires server
+    //load images
     grass = loadImage('grass.png');
     bigGrass = loadImage('bigGrass.png');
     beeHeadUp = loadImage('beeHeadRoundUp.png');
@@ -82,7 +82,7 @@ function preload() {
     medFlower = loadImage('fourPetalFlower.png');
     hardFlower = loadImage('manyPetalFlower.png');
     honeycomb = loadImage('honeycomb.png');
-    //load sounds - Duri added, requires sercer
+    //load sounds
     letterGrab = loadSound('letterGrab.wav');
     wordBank = loadSound('wordBank.wav');
     trash = loadSound('trash.wav');
@@ -144,7 +144,7 @@ function setup() {
     frameRate(5);
     populatePossibleLetterPos();
     initLetters();
-    textToSpeech = new p5.Speech(); // speech synthesis object - Duri added, requires server
+    textToSpeech = new p5.Speech(); // speech synthesis object
 
     // prevents window from scrolling on desktop -- ateachey3
     window.addEventListener("keydown", function(e) {
@@ -224,7 +224,7 @@ function addLetter() {
   if (display1.split('').includes(justEaten) && !uneatenLetters.includes(justEaten)) {
     var letter = justEaten;
     uneatenLetters.push(letter);
-  } else { //Duri edited this else clause - does NOT require server
+  } else { 
     //infrequently but randomly - put a $ or @ in place of a letter
     var randomNumber = Math.floor(Math.random()*15);
     if (randomNumber > 0 && randomNumber < 4) {
@@ -339,7 +339,7 @@ function draw() {
       if (uneatenLetters[i] == "$") {
         //don't add $ or @ to the tail
         s.total--;
-        s.eaten.splice(s.eaten.length-1, 1); //Duri edited this line - does NOT require server
+        s.eaten.splice(s.eaten.length-1, 1); 
         //make a string from the eaten letters
         currentString = "";
         for (var j = 0; j < eatenLetters.length; j++) {
@@ -364,7 +364,7 @@ function draw() {
         //actually remove the letters we identified
         for (var j = 0; j < lettersToRemove.length; j++) {
           s.eaten.splice(lettersToRemove[j], 1);
-          s.tail.splice(lettersToRemove[j], 1); //Duri added this line - does NOT require server
+          s.tail.splice(lettersToRemove[j], 1); 
           eatenLetters.splice(lettersToRemove[j], 1);
           s.total--;
         }
@@ -384,7 +384,7 @@ function draw() {
         for (var i = 0; i < substrings.length; i++) {
           if (!wordsEaten.includes(substrings[i])) {
             var wordFound = findWord(substrings[i].split(''));
-            if (wordFound) { //Duri edited text in this if clause
+            if (wordFound) { 
               bonus.play(); 
               bonusFading = true;
               bonusText = "+" + addToScore;
@@ -394,7 +394,7 @@ function draw() {
         }
         if (substrings.includes(display1)) {
             bonusFading = true;
-            bonusText = "Awesome!"; //TODO: replace this text with passed level text
+            bonusText = "Awesome!"; //passed level text
             bonusTextLocation = createVector(gameWidth/2, gameHeight/2);
             betweenLevels = true;
             spelledTarget++;
@@ -507,7 +507,7 @@ function draw() {
     **/
     s.update();
     s.show();
-    if (bonusFading) { //Duri added this, does require server
+    if (bonusFading) {
         bonusTextDisplay();
     }
 }
@@ -526,7 +526,7 @@ function findWord(letters) {
         // And see if it's in the dictionary
         if (dictionary[word]) {
           if(!wordsEaten.includes(word)) {
-            textToSpeech.speak(word); // say something - Duri added this, requires server
+            textToSpeech.speak(word); //speech to text reads the word
             wordsEaten.push(word);
             addToScore = 0;
             for (var j = 0; j < word.length; j++) {
@@ -547,7 +547,6 @@ function findWord(letters) {
     }
 }
 
-//Duri added this method requires server
 function bonusTextDisplay() {
   bonusTextColor.setAlpha(fade);
   fill(bonusTextColor)

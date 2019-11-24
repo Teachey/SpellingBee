@@ -36,7 +36,7 @@ function Snake() {
         this.total = 0;
         this.eaten = [];
         this.tail = [];
-        wall.play(); //Duri added this line 
+        wall.play(); //play running into wall sound
         return true;
       }
     }
@@ -68,19 +68,19 @@ function Snake() {
     }
   }
 
-  this.drawBeeWings = function(xOffset1, yOffset1, xOffset2, yOffset2, circXOff, circYOff) {
+  this.drawBeeWings = function(xOffset1, yOffset1, xOffset2, yOffset2, circXOff, circYOff, sclX, sclY) {
     //draw wings overlapping with bee tail
     if (this.tail.length > 0) {
       fill(115, 194, 251, 127);
-      ellipse(this.tail[this.tail.length-1].x + xOffset1, this.tail[this.tail.length-1].y + yOffset1, scl, scl/2);
-      ellipse(this.tail[this.tail.length-1].x + xOffset2, this.tail[this.tail.length-1].y + yOffset2, scl, scl/2);
+      ellipse(this.tail[this.tail.length-1].x + xOffset1, this.tail[this.tail.length-1].y + yOffset1, sclX, sclY);
+      ellipse(this.tail[this.tail.length-1].x + xOffset2, this.tail[this.tail.length-1].y + yOffset2, sclX, sclY);
     } else {
       //draw initial bee body
       fill(255,223,0);
       circle(this.x + circXOff, this.y + circYOff, scl);
       fill(115, 194, 251, 127);
-      ellipse(this.x + xOffset1, this.y + yOffset1, scl, scl/2);
-      ellipse(this.x + xOffset2, this.y + yOffset2, scl, scl/2);
+      ellipse(this.x + xOffset1, this.y + yOffset1, sclX, sclY);
+      ellipse(this.x + xOffset2, this.y + yOffset2, sclX, sclY);
     }
   }
 
@@ -117,7 +117,7 @@ function Snake() {
         }
       }
 
-      //Draw tail
+      //Draw letters in bee
       for (var i = 0; i < this.eaten.length; i++) {
         textAlign(CENTER, CENTER);
         textSize(scl/2);
@@ -134,31 +134,35 @@ function Snake() {
         text(eatenLetters[i].toUpperCase(), this.tail[i].x, this.tail[i].y, scl, scl);  
       }
 
-      //Draw wings
+      //Draw wings -- TODO: is there a way to minimize number of conditionals?
       if (this.xspeed == 0 && this.yspeed == -1) {
         //moving up
         if (this.tail.length > 0) {
-          this.drawBeeWings(scl/8, 0, scl - scl/8, 0, scl/2, scl + scl/2);
+          this.drawBeeWings(scl/8, 0, scl - scl/8, 0, scl/2, scl + scl/2, scl, scl/2);
         } else {
-          this.drawBeeWings(scl/8, scl, scl - scl/8, scl, scl/2, scl + scl/2);
+          this.drawBeeWings(scl/8, scl, scl - scl/8, scl, scl/2, scl + scl/2, scl, scl/2);
         }
       } else if (this.xspeed == -1 && this.yspeed == 0) {
-        //moving left -- not working
+        //moving left
         if (this.tail.length > 0) {
-          this.drawBeeWings(0, scl/8, 0, scl - scl/8, scl + scl/2, scl/2);
+          this.drawBeeWings(0, scl/8, 0, scl - scl/8, scl + scl/2, scl/2, scl/2, scl);
         } else {
-          this.drawBeeWings(scl, scl/8, scl, scl - scl/8, scl + scl/2, scl/2);
+          this.drawBeeWings(scl, scl/8, scl, scl - scl/8, scl + scl/2, scl/2, scl/2, scl);
         }
       } else if (this.xspeed == 0 && this.yspeed == 1) {
         //moving down
         if (this.tail.length > 0) {
-          this.drawBeeWings(scl/8, scl, scl - scl/8, scl, scl/2, -scl + scl/2);
+          this.drawBeeWings(scl/8, scl, scl - scl/8, scl, scl/2, -scl + scl/2, scl, scl/2);
         } else {
-          this.drawBeeWings(scl/8, 0, scl - scl/8, 0, scl/2, -scl + scl/2);
+          this.drawBeeWings(scl/8, 0, scl - scl/8, 0, scl/2, -scl + scl/2, scl, scl/2);
         }
       } else {
         //moving right -- not working
-        this.drawBeeWings(0, scl/8, 0, scl + scl/8, -scl + scl/2, scl/2);
+        if (this.tail.length > 0) {
+          this.drawBeeWings(scl, scl/8, scl, scl - scl/8, -scl + scl/2, scl/2, scl/2, scl);
+        } else {
+          this.drawBeeWings(0, scl/8, 0, scl - scl/8, -scl + scl/2, scl/2, scl/2, scl);
+        }
       }
       
   }
