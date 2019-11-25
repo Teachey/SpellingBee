@@ -56,8 +56,7 @@ var betweenLevels;
 //art
 var beeHeadRight, beeHeadDown, beeHeadUp, beeHeadLeft, easyFlower, medFlower, hardFlower, honeycomb, grass, bigGrass;
 
-//sounds
-var letterGrab, wordBank, trash, bonus, wall;
+//sound
 var textToSpeech;
 
 //fonts 
@@ -71,7 +70,6 @@ var bonusTextLocation;
 var bonusFading = false;
 
 function preload() {
-    //load images
     grass = loadImage('grass.png');
     bigGrass = loadImage('bigGrass.png');
     beeHeadUp = loadImage('beeHeadRoundUp.png');
@@ -82,12 +80,6 @@ function preload() {
     medFlower = loadImage('fourPetalFlower.png');
     hardFlower = loadImage('manyPetalFlower.png');
     honeycomb = loadImage('honeycomb.png');
-    //load sounds
-    letterGrab = loadSound('letterGrab.wav');
-    wordBank = loadSound('wordBank.wav');
-    trash = loadSound('trash.wav');
-    bonus = loadSound('bonus.wav');
-    wall = loadSound('wall.wav');
 
     dictArr = dict.split('\n').sort(function(a,b) {
         return a.length - b.length;
@@ -130,7 +122,7 @@ function preload() {
 
 function setup() {
     gameWidth = min(windowWidth, windowHeight, 750);
-    scl = gameWidth / 15;
+    scl = gameWidth / 10;
     gameHeight = scl * ceil(windowHeight/scl) - scl * 4;
     screenWidth = gameWidth;
     screenHeight = windowHeight;
@@ -140,7 +132,6 @@ function setup() {
     centerCanvas();
     bonusTextColor = color(204, 71 , 75);
     s = new Snake();
-   // s.eat(createVector(0, 0));
     frameRate(5);
     populatePossibleLetterPos();
     initLetters();
@@ -165,6 +156,70 @@ function setup() {
     document.body.addEventListener("touchmove", function(e) {
         e.preventDefault();
     }, { passive: false });
+    
+    // https://stackoverflow.com/questions/10951524/play-and-replay-a-sound-on-safari-mobile
+    // Makes sounds work on iPhone, but it starts kind of clunky on desktop-- ateachey3
+    var self = this;
+    var letterGrab = new Audio('letterGrab.wav');
+    var wall = new Audio('wall.wav');
+    var wordBank = new Audio('wordBank.wav');
+    var bonus = new Audio('bonus.wav');
+
+    self.letterGrab = letterGrab;
+    self.wall = wall;
+    self.wordBank = wordBank;
+    self.bonus = bonus;
+
+    var startLetterGrab = function(){
+        self.letterGrab.play();
+        document.removeEventListener("touchstart", self.startLetterGrab, false);
+    }
+    self.startLetterGrab = startLetterGrab;
+    var startWall = function(){
+      self.wall.play();
+      document.removeEventListener("touchstart", self.startWall, false);
+    }
+    self.startWall = startWall;
+    var startWordBank = function(){
+      self.wordBank.play();
+      document.removeEventListener("touchstart", self.startWordBank, false);
+    }
+    self.startWordBank = startWordBank;
+    var startBonus = function(){
+      self.bonus.play();
+      document.removeEventListener("touchstart", self.startBonus, false);
+    }
+    self.startBonus = startBonus;
+
+    var pauseLetterGrab = function(){
+        self.letterGrab.pause();
+        self.letterGrab.removeEventListener("play", self.pauseLetterGrab, false);
+    }
+    self.pauseLetterGrab = pauseLetterGrab;
+    var pauseWall = function(){
+      self.wall.pause();
+      self.wall.removeEventListener("play", self.pauseWall, false);
+    }
+    self.pauseWall = pauseWall;
+    var pauseWordBank = function(){
+      self.wordBank.pause();
+      self.wordBank.removeEventListener("play", self.pauseWordBank, false);
+    }
+    self.pauseWordBank = pauseWordBank;
+    var pauseBonus = function(){
+      self.bonus.pause();
+      self.bonus.removeEventListener("play", self.pauseBonus, false);
+    }
+    self.pauseBonus = pauseBonus;
+
+    document.addEventListener("touchstart", self.startLetterGrab, false);
+    self.letterGrab.addEventListener("play", self.pauseLetterGrab, false);
+    document.addEventListener("touchstart", self.startWall, false);
+    self.wall.addEventListener("play", self.pauseWall, false);
+    document.addEventListener("touchstart", self.startWordBank, false);
+    self.wordBank.addEventListener("play", self.pauseWordBank, false);
+    document.addEventListener("touchstart", self.startBonus, false);
+    self.bonus.addEventListener("play", self.pauseBonus, false);
 }
 
 function centerCanvas() {
@@ -484,11 +539,11 @@ function draw() {
 
     //draw target word
     fill(255);
-    textSize(scl);
+    //textSize(scl);
     text(display1.toUpperCase(), gameWidth/2, gameHeight + scl*2);
 
     //draw score
-    textSize(scl*.7);
+    //textSize(scl*.7);
     var str = `Score: ${score}`;
     text(str, scl * 2.5, gameHeight + scl * 2.5);
 
@@ -496,15 +551,6 @@ function draw() {
         var nextRound = "swipe to play next round";
         text(nextRound, gameWidth/2, gameHeight + scl * 4.5);
     }
-    /**
-    Maybe add "Tap here to continue in this space"-- ateachey3
-    //draw words eaten
-    if (wordsEaten) {
-        for (var i = 0; i < wordsEaten.length; i++) {
-            text(wordsEaten[i], 75, gameHeight + 130 + (i+1)*30, scl, scl);
-        }
-    }
-    **/
     s.update();
     s.show();
     if (bonusFading) {
