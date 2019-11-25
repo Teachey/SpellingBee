@@ -547,12 +547,12 @@ function draw() {
     //draw target word
     fill(255);
     //textSize(scl);
-    text(display1.toUpperCase(), gameWidth/2, gameHeight + scl*2);
+    text(display1.toUpperCase(), gameWidth/2, screenHeight - scl); // adjusted to add an extra row of letter positions-- ateachey3
 
     //draw score
     //textSize(scl*.7);
     var str = `Score: ${score}`;
-    text(str, scl * 2.5, gameHeight + scl * 2.5);
+    text(str, scl * 2.5, screenHeight - scl*0.5); // adjusted to add an extra row of letter positions-- ateachey3
 
     if (betweenLevels) {
       tint(255, 127);
