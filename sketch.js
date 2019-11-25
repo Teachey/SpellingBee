@@ -123,7 +123,7 @@ function preload() {
 function setup() {
     gameWidth = min(windowWidth, windowHeight, 750);
     scl = gameWidth / 10;
-    gameHeight = scl * ceil(windowHeight/scl) - scl * 4;
+    gameHeight = scl * ceil(windowHeight/scl) - scl * 3; // adjusted to add an extra row of letter positions-- ateachey3
     screenWidth = gameWidth;
     screenHeight = windowHeight;
     //screenHeight = max(windowWidth, windowHeight, 1000); //not sure that this works
@@ -384,7 +384,7 @@ function draw() {
   background(0, 165, 81);
   fill(0, 165, 81);
   rect(0, 0, gameWidth, gameHeight);
-  image(bigGrass, 0, screenHeight - scl*4, gameWidth, scl*4);
+  image(bigGrass, 0, screenHeight - scl*3, gameWidth, scl*4); // adjusted to add an extra row of letter positions-- ateachey3
   for (var i = 0; i < gameWidth/scl; i++) {
     for (var j = 0; j < gameHeight/scl; j++) {
       if (i % 2 == 0) {
