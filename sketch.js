@@ -335,6 +335,12 @@ function initLetters() {
     }
 }
 
+function touchEnded() {
+    if (betweenLevels) {
+      betweenLevels = false;
+    }
+}
+
 // enables touch screen-- ateachey3
 function swiped(event) {
     // I wanted this to be a while loop but the game would freeze-- ateachey3
@@ -448,8 +454,9 @@ function draw() {
           }
         }
         if (substrings.includes(display1)) {
-            bonusFading = true;
-            bonusText = "Awesome!"; //passed level text
+            //bonusFading = true;
+            //console.log(bonusText);
+            //bonusText = "Awesome!"; //passed level text
             bonusTextLocation = createVector(gameWidth/2, gameHeight/2);
             betweenLevels = true;
             spelledTarget++;
@@ -548,11 +555,17 @@ function draw() {
     text(str, scl * 2.5, gameHeight + scl * 2.5);
 
     if (betweenLevels) {
-        var nextRound = "swipe to play next round";
-        text(nextRound, gameWidth/2, gameHeight + scl * 4.5);
+      tint(255, 127);
+      var level = display1.length - 2;
+      var nextLevel = `Level ${level} complete\nwith ${score} points!\nTap to continue`;
+      fill(204, 71 , 75);
+      textSize(scl);
+      text(nextLevel, gameWidth/2, gameHeight/2);
+    } else {
+      noTint();
+      s.update();
+      s.show();
     }
-    s.update();
-    s.show();
     if (bonusFading) {
         bonusTextDisplay();
     }
