@@ -52,6 +52,7 @@ var indexStop;
 
 // true when the player has just completed a round
 var betweenLevels;
+var level = 0;
 
 //art
 var beeHeadRight, beeHeadDown, beeHeadUp, beeHeadLeft, easyFlower, medFlower, hardFlower, honeycomb, grass, bigGrass;
@@ -454,9 +455,7 @@ function draw() {
           }
         }
         if (substrings.includes(display1)) {
-            //bonusFading = true;
-            //console.log(bonusText);
-            //bonusText = "Awesome!"; //passed level text
+            level++;
             bonusTextLocation = createVector(gameWidth/2, gameHeight/2);
             betweenLevels = true;
             spelledTarget++;
@@ -556,7 +555,6 @@ function draw() {
 
     if (betweenLevels) {
       tint(255, 127);
-      var level = display1.length - 2;
       var nextLevel = `Level ${level} complete\nwith ${score} points!\nTap to continue`;
       fill(204, 71 , 75);
       textSize(scl);
