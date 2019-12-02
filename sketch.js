@@ -69,6 +69,7 @@ var goingUp = true;
 var bonusText;
 var bonusTextLocation;
 var bonusFading = false;
+var bonusFont;
 
 function preload() {
     grass = loadImage('grass.png');
@@ -81,6 +82,7 @@ function preload() {
     medFlower = loadImage('fourPetalFlower.png');
     hardFlower = loadImage('manyPetalFlower.png');
     honeycomb = loadImage('honeycomb.png');
+    bonusFont = loadFont('namco.ttf');
 
     dictArr = dict.split('\n').sort(function(a,b) {
         return a.length - b.length;
@@ -448,7 +450,7 @@ function draw() {
             if (wordFound) { 
               bonus.play(); 
               bonusFading = true;
-              bonusText = "+" + addToScore;
+              bonusText = addToScore;
               bonusTextLocation = createVector(s.x, s.y);
             }
           }
@@ -603,17 +605,19 @@ function findWord(letters) {
 function bonusTextDisplay() {
   bonusTextColor.setAlpha(fade);
   fill(bonusTextColor)
-  textSize(scl);
+  textSize(scl/2);
+  textFont(bonusFont);
   text(bonusText, bonusTextLocation.x, bonusTextLocation.y, scl, scl);
+  bonusTextLocation.y = bonusTextLocation.y - 20;
   if (goingUp) {
     if (fade < 255) {
-      fade = fade + 30;
+      fade = fade + 100;
     } else {
       goingUp = false;
     }
   } else {
     if (fade > 0) {
-      fade = fade - 30;
+      fade = fade - 100;
     } else {
       goingUp = true;
       bonusText = "";
@@ -621,4 +625,5 @@ function bonusTextDisplay() {
       bonusFading = false;
     }
   }
+  textFont('Helvetica');
 }
