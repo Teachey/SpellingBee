@@ -82,7 +82,8 @@ function preload() {
     medFlower = loadImage('fourPetalFlower.png');
     hardFlower = loadImage('manyPetalFlower.png');
     honeycomb = loadImage('honeycomb.png');
-    bonusFont = loadFont('namco.ttf');
+    bonusFont = 'Helvetica';
+   // bonusFont = loadFont('namco.ttf');
 
     dictArr = dict.split('\n').sort(function(a,b) {
         return a.length - b.length;
@@ -605,7 +606,10 @@ function findWord(letters) {
 function bonusTextDisplay() {
   bonusTextColor.setAlpha(fade);
   fill(bonusTextColor)
-  textSize(scl/2);
+  textSize(scl);
+  stroke(0, 0, 0);
+  strokeWeight(3);
+  //textSize(scl/2);
   textFont(bonusFont);
   text(bonusText, bonusTextLocation.x, bonusTextLocation.y, scl, scl);
   bonusTextLocation.y = bonusTextLocation.y - 20;
