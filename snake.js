@@ -123,9 +123,11 @@ function Snake() {
         textSize(scl/2);
         fill(255,223,0);
         if (eatenLettersInWord.includes(i)) {
+          textStyle(BOLD);
           stroke(0, 0, 0);
           strokeWeight(4);
         } else {
+          textStyle(NORMAL);
           strokeWeight(0);
         }
         circle(this.tail[i].x + scl/2, this.tail[i].y + scl/2, scl);
@@ -133,7 +135,8 @@ function Snake() {
         fill(0, 0, 0);
         text(eatenLetters[i].toUpperCase(), this.tail[i].x, this.tail[i].y, scl, scl);  
       }
-
+      textStyle(NORMAL);
+      
       //Draw wings -- TODO: is there a way to minimize number of conditionals?
       if (this.xspeed == 0 && this.yspeed == -1) {
         //moving up

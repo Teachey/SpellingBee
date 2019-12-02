@@ -169,7 +169,7 @@ function setup() {
 
 function centerCanvas() {
     var x = (windowWidth - width) / 2;
-    cnv.position(x, 0);
+    cnv.position(x, 0); //TODO: this line throws an error on iphone
 }
 
 function windowResized() {
