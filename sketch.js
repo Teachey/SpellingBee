@@ -124,10 +124,9 @@ function preload() {
 function setup() {
     gameWidth = min(windowWidth, windowHeight, 750);
     scl = gameWidth / 10;
-    gameHeight = scl * ceil(windowHeight/scl) - scl * 3; // adjusted to add an extra row of letter positions-- ateachey3
+    gameHeight = scl * ceil(windowHeight/scl) - scl * 3;
     screenWidth = gameWidth;
     screenHeight = windowHeight;
-    //screenHeight = max(windowWidth, windowHeight, 1000); //not sure that this works
     betweenLevels = false;
     cnv = createCanvas(screenWidth, screenHeight);
     centerCanvas();
@@ -345,7 +344,7 @@ function touchEnded() {
 // enables touch screen-- ateachey3
 function swiped(event) {
     // I wanted this to be a while loop but the game would freeze-- ateachey3
-    if (betweenLevels == false) {
+    if (!betweenLevels) {
         if (event.direction == 4) {
             s.dir(1, 0); //right
         } else if (event.direction == 8) {
@@ -363,7 +362,7 @@ function swiped(event) {
 }
 
 function keyPressed() {
-    if (betweenLevels == false) {
+    if (!betweenLevels) {
         if (keyCode === UP_ARROW) {
             s.dir(0, -1);
         } else if (keyCode === DOWN_ARROW) {
@@ -385,7 +384,7 @@ function draw() {
   background(0, 165, 81);
   fill(0, 165, 81);
   rect(0, 0, gameWidth, gameHeight);
-  image(bigGrass, 0, screenHeight - scl*3, gameWidth, scl*4); // adjusted to add an extra row of letter positions-- ateachey3
+  image(bigGrass, 0, screenHeight - scl*3, gameWidth, scl*4);
   for (var i = 0; i < gameWidth/scl; i++) {
     for (var j = 0; j < gameHeight/scl; j++) {
       if (i % 2 == 0) {
@@ -494,7 +493,6 @@ function draw() {
       justEaten = eatenLetters[eatenLetters.length - 1];
       addLetter();
 
-
       //look for words in the string and record their locations
       eatenLettersInWord = [];
       for (var j = 0; j < wordsEaten.length; j++) {
@@ -508,17 +506,6 @@ function draw() {
           }
         }
       }
-    }
-  }
-
-  if(s.death()) {
-    if (spelledTarget < 1) {
-        clearThings();
-        initLetters();
-    }
-    else {
-        spelledTarget--;
-        eatenLetters = [];
     }
   }
 
@@ -545,13 +532,11 @@ function draw() {
 
     //draw target word
     fill(255);
-    //textSize(scl);
-    text(display1.toUpperCase(), gameWidth/2, screenHeight - scl); // adjusted to add an extra row of letter positions-- ateachey3
+    text(display1.toUpperCase(), gameWidth/2, screenHeight - scl);
 
     //draw score
-    //textSize(scl*.7);
     var str = `Score: ${score}`;
-    text(str, scl * 2.5, screenHeight - scl*0.5); // adjusted to add an extra row of letter positions-- ateachey3
+    text(str, scl * 2.5, screenHeight - scl*0.5);
 
     if (betweenLevels) {
       tint(255, 127);
@@ -561,8 +546,19 @@ function draw() {
       text(nextLevel, gameWidth/2, gameHeight/2);
     } else {
       noTint();
-      s.update();
-      s.show();
+    }
+    s.update();
+    s.show();
+
+    if(s.death()) {
+      if (spelledTarget < 1) {
+          clearThings();
+          initLetters();
+      }
+      else {
+          spelledTarget--;
+          eatenLetters = [];
+      }
     }
     if (bonusFading) {
         bonusTextDisplay();
