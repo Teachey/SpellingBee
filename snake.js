@@ -45,17 +45,19 @@ function Snake() {
 
   this.update = function () {
     for (var i = 0; i < this.tail.length - 1; i++) {
-      this.tail[i] = this.tail[i + 1];
+      if (!betweenLevels) {
+        this.tail[i] = this.tail[i + 1];
+      } 
     }
-    if (this.total >= 1) {
-      this.tail[this.total - 1] = createVector(this.x, this.y);
+    if (this.total >= 1 && !betweenLevels) {
+        this.tail[this.total - 1] = createVector(this.x, this.y);
+    } 
+    if (!betweenLevels) {
+      this.x = this.x + this.xspeed * scl;
+      this.y = this.y + this.yspeed * scl;
+      this.x = constrain(this.x, 0, gameWidth - scl);
+      this.y = constrain(this.y, 0, gameHeight - scl);
     }
-
-    this.x = this.x + this.xspeed * scl;
-    this.y = this.y + this.yspeed * scl;
-
-    this.x = constrain(this.x, 0, gameWidth - scl);
-    this.y = constrain(this.y, 0, gameHeight - scl);
   }
 
   this.drawBeeHeadAndTail = function(img, triX1Off, triY1Off, triX2Off, triY2Off, triX3Off, triY3Off) {
@@ -107,7 +109,7 @@ function Snake() {
           this.drawBeeHeadAndTail(beeHeadDown, scl/2 - 10, -scl*.8 + scl, scl/2 + 10, -scl*.8 + scl, scl/2, -scl*.8 + scl- scl/2 + 5);
         } else {
           this.drawBeeHeadAndTail(beeHeadDown, scl/2 - 10, -scl*.8, scl/2 + 10, -scl*.8, scl/2, -scl*.8 - scl/2 + 5);
-        }
+        } 
       } else {
         //moving right
         if (this.tail.length > 0) {
@@ -130,10 +132,12 @@ function Snake() {
           textStyle(NORMAL);
           strokeWeight(0);
         }
-        circle(this.tail[i].x + scl/2, this.tail[i].y + scl/2, scl);
-        strokeWeight(0);
-        fill(0, 0, 0);
-        text(eatenLetters[i].toUpperCase(), this.tail[i].x, this.tail[i].y, scl, scl);  
+        if (this.tail[i]) {
+          circle(this.tail[i].x + scl/2, this.tail[i].y + scl/2, scl);
+          strokeWeight(0);
+          fill(0, 0, 0);
+          text(eatenLetters[i].toUpperCase(), this.tail[i].x, this.tail[i].y, scl, scl); 
+        }
       }
       textStyle(NORMAL);
       
@@ -160,13 +164,12 @@ function Snake() {
           this.drawBeeWings(scl/8, 0, scl - scl/8, 0, scl/2, -scl + scl/2, scl, scl/2);
         }
       } else {
-        //moving right -- not working
+        //moving right
         if (this.tail.length > 0) {
           this.drawBeeWings(scl, scl/8, scl, scl - scl/8, -scl + scl/2, scl/2, scl/2, scl);
         } else {
           this.drawBeeWings(0, scl/8, 0, scl - scl/8, -scl + scl/2, scl/2, scl/2, scl);
         }
       }
-      
   }
 }

@@ -52,12 +52,12 @@ var indexStop;
 
 // true when the player has just completed a round
 var betweenLevels;
+var level = 0;
 
 //art
 var beeHeadRight, beeHeadDown, beeHeadUp, beeHeadLeft, easyFlower, medFlower, hardFlower, honeycomb, grass, bigGrass;
 
-//sounds
-var letterGrab, wordBank, trash, bonus, wall;
+//sound
 var textToSpeech;
 
 //fonts 
@@ -71,7 +71,6 @@ var bonusTextLocation;
 var bonusFading = false;
 
 function preload() {
-    //load images
     grass = loadImage('grass.png');
     bigGrass = loadImage('bigGrass.png');
     beeHeadUp = loadImage('beeHeadRoundUp.png');
@@ -82,12 +81,6 @@ function preload() {
     medFlower = loadImage('fourPetalFlower.png');
     hardFlower = loadImage('manyPetalFlower.png');
     honeycomb = loadImage('honeycomb.png');
-    //load sounds
-    letterGrab = loadSound('letterGrab.wav');
-    wordBank = loadSound('wordBank.wav');
-    trash = loadSound('trash.wav');
-    bonus = loadSound('bonus.wav');
-    wall = loadSound('wall.wav');
 
     dictArr = dict.split('\n').sort(function(a,b) {
         return a.length - b.length;
@@ -130,17 +123,15 @@ function preload() {
 
 function setup() {
     gameWidth = min(windowWidth, windowHeight, 750);
-    scl = gameWidth / 15;
-    gameHeight = scl * ceil(windowHeight/scl) - scl * 4;
+    scl = gameWidth / 10;
+    gameHeight = scl * ceil(windowHeight/scl) - scl * 3;
     screenWidth = gameWidth;
     screenHeight = windowHeight;
-    //screenHeight = max(windowWidth, windowHeight, 1000); //not sure that this works
     betweenLevels = false;
     cnv = createCanvas(screenWidth, screenHeight);
     centerCanvas();
     bonusTextColor = color(204, 71 , 75);
     s = new Snake();
-   // s.eat(createVector(0, 0));
     frameRate(5);
     populatePossibleLetterPos();
     initLetters();
@@ -165,6 +156,70 @@ function setup() {
     document.body.addEventListener("touchmove", function(e) {
         e.preventDefault();
     }, { passive: false });
+    
+    // https://stackoverflow.com/questions/10951524/play-and-replay-a-sound-on-safari-mobile
+    // Makes sounds work on iPhone, but it starts kind of clunky on desktop-- ateachey3
+    var self = this;
+    var letterGrab = new Audio('letterGrab.wav');
+    var wall = new Audio('wall.wav');
+    var wordBank = new Audio('wordBank.wav');
+    var bonus = new Audio('bonus.wav');
+
+    self.letterGrab = letterGrab;
+    self.wall = wall;
+    self.wordBank = wordBank;
+    self.bonus = bonus;
+
+    var startLetterGrab = function(){
+        self.letterGrab.play();
+        document.removeEventListener("touchstart", self.startLetterGrab, false);
+    }
+    self.startLetterGrab = startLetterGrab;
+    var startWall = function(){
+      self.wall.play();
+      document.removeEventListener("touchstart", self.startWall, false);
+    }
+    self.startWall = startWall;
+    var startWordBank = function(){
+      self.wordBank.play();
+      document.removeEventListener("touchstart", self.startWordBank, false);
+    }
+    self.startWordBank = startWordBank;
+    var startBonus = function(){
+      self.bonus.play();
+      document.removeEventListener("touchstart", self.startBonus, false);
+    }
+    self.startBonus = startBonus;
+
+    var pauseLetterGrab = function(){
+        self.letterGrab.pause();
+        self.letterGrab.removeEventListener("play", self.pauseLetterGrab, false);
+    }
+    self.pauseLetterGrab = pauseLetterGrab;
+    var pauseWall = function(){
+      self.wall.pause();
+      self.wall.removeEventListener("play", self.pauseWall, false);
+    }
+    self.pauseWall = pauseWall;
+    var pauseWordBank = function(){
+      self.wordBank.pause();
+      self.wordBank.removeEventListener("play", self.pauseWordBank, false);
+    }
+    self.pauseWordBank = pauseWordBank;
+    var pauseBonus = function(){
+      self.bonus.pause();
+      self.bonus.removeEventListener("play", self.pauseBonus, false);
+    }
+    self.pauseBonus = pauseBonus;
+
+    document.addEventListener("touchstart", self.startLetterGrab, false);
+    self.letterGrab.addEventListener("play", self.pauseLetterGrab, false);
+    document.addEventListener("touchstart", self.startWall, false);
+    self.wall.addEventListener("play", self.pauseWall, false);
+    document.addEventListener("touchstart", self.startWordBank, false);
+    self.wordBank.addEventListener("play", self.pauseWordBank, false);
+    document.addEventListener("touchstart", self.startBonus, false);
+    self.bonus.addEventListener("play", self.pauseBonus, false);
 }
 
 function centerCanvas() {
@@ -280,10 +335,16 @@ function initLetters() {
     }
 }
 
+function touchEnded() {
+    if (betweenLevels) {
+      betweenLevels = false;
+    }
+}
+
 // enables touch screen-- ateachey3
 function swiped(event) {
     // I wanted this to be a while loop but the game would freeze-- ateachey3
-    if (betweenLevels == false) {
+    if (!betweenLevels) {
         if (event.direction == 4) {
             s.dir(1, 0); //right
         } else if (event.direction == 8) {
@@ -301,7 +362,7 @@ function swiped(event) {
 }
 
 function keyPressed() {
-    if (betweenLevels == false) {
+    if (!betweenLevels) {
         if (keyCode === UP_ARROW) {
             s.dir(0, -1);
         } else if (keyCode === DOWN_ARROW) {
@@ -323,7 +384,7 @@ function draw() {
   background(0, 165, 81);
   fill(0, 165, 81);
   rect(0, 0, gameWidth, gameHeight);
-  image(bigGrass, 0, screenHeight - scl*4, gameWidth, scl*4);
+  image(bigGrass, 0, screenHeight - scl*3, gameWidth, scl*4);
   for (var i = 0; i < gameWidth/scl; i++) {
     for (var j = 0; j < gameHeight/scl; j++) {
       if (i % 2 == 0) {
@@ -393,8 +454,7 @@ function draw() {
           }
         }
         if (substrings.includes(display1)) {
-            bonusFading = true;
-            bonusText = "Awesome!"; //passed level text
+            level++;
             bonusTextLocation = createVector(gameWidth/2, gameHeight/2);
             betweenLevels = true;
             spelledTarget++;
@@ -433,7 +493,6 @@ function draw() {
       justEaten = eatenLetters[eatenLetters.length - 1];
       addLetter();
 
-
       //look for words in the string and record their locations
       eatenLettersInWord = [];
       for (var j = 0; j < wordsEaten.length; j++) {
@@ -447,17 +506,6 @@ function draw() {
           }
         }
       }
-    }
-  }
-
-  if(s.death()) {
-    if (spelledTarget < 1) {
-        clearThings();
-        initLetters();
-    }
-    else {
-        spelledTarget--;
-        eatenLetters = [];
     }
   }
 
@@ -484,29 +532,34 @@ function draw() {
 
     //draw target word
     fill(255);
-    textSize(scl);
-    text(display1.toUpperCase(), gameWidth/2, gameHeight + scl*2);
+    text(display1.toUpperCase(), gameWidth/2, screenHeight - scl);
 
     //draw score
-    textSize(scl*.7);
     var str = `Score: ${score}`;
-    text(str, scl * 2.5, gameHeight + scl * 2.5);
+    text(str, scl * 2.5, screenHeight - scl*0.5);
 
     if (betweenLevels) {
-        var nextRound = "swipe to play next round";
-        text(nextRound, gameWidth/2, gameHeight + scl * 4.5);
+      tint(255, 127);
+      var nextLevel = `Level ${level} complete\nwith ${score} points!\nTap to continue`;
+      fill(204, 71 , 75);
+      textSize(scl);
+      text(nextLevel, gameWidth/2, gameHeight/2);
+    } else {
+      noTint();
     }
-    /**
-    Maybe add "Tap here to continue in this space"-- ateachey3
-    //draw words eaten
-    if (wordsEaten) {
-        for (var i = 0; i < wordsEaten.length; i++) {
-            text(wordsEaten[i], 75, gameHeight + 130 + (i+1)*30, scl, scl);
-        }
-    }
-    **/
     s.update();
     s.show();
+
+    if(s.death()) {
+      if (spelledTarget < 1) {
+          clearThings();
+          initLetters();
+      }
+      else {
+          spelledTarget--;
+          eatenLetters = [];
+      }
+    }
     if (bonusFading) {
         bonusTextDisplay();
     }
