@@ -71,6 +71,9 @@ var bonusTextLocation;
 var bonusFading = false;
 var bonusFont;
 
+var firstTime = false; 
+var startOfGame = true;
+
 function preload() {
     grass = loadImage('grass.png');
     bigGrass = loadImage('bigGrass.png');
@@ -82,8 +85,8 @@ function preload() {
     medFlower = loadImage('fourPetalFlower.png');
     hardFlower = loadImage('manyPetalFlower.png');
     honeycomb = loadImage('honeycomb.png');
-    bonusFont = 'Helvetica';
-   // bonusFont = loadFont('namco.ttf');
+    //bonusFont = 'Helvetica';
+    bonusFont = loadFont('Baloo-Regular.ttf');
 
     dictArr = dict.split('\n').sort(function(a,b) {
         return a.length - b.length;
@@ -133,7 +136,7 @@ function setup() {
     betweenLevels = false;
     cnv = createCanvas(screenWidth, screenHeight);
     centerCanvas();
-    bonusTextColor = color(204, 71 , 75);
+    bonusTextColor = color(255, 255 , 255);
     s = new Snake();
     frameRate(5);
     populatePossibleLetterPos();
@@ -264,8 +267,15 @@ function getAllSubstrings(str,size) {
   return result;
 }
 
+function clearLettersOnly() {
+  uneatenLetters = [];
+  letterPositions = [];
+    possibleLetterPositions = [];
+        populatePossibleLetterPos();
+
+}
+
 function clearThings() {
-    score = 0;
     wordsEaten = [];
     eatenLetters = [];
     eatenLettersInWord = [];
@@ -346,6 +356,9 @@ function touchEnded() {
 
 // enables touch screen-- ateachey3
 function swiped(event) {
+  if (startOfGame) {
+      startOfGame = false;
+  }
     // I wanted this to be a while loop but the game would freeze-- ateachey3
     if (!betweenLevels) {
         if (event.direction == 4) {
@@ -365,6 +378,9 @@ function swiped(event) {
 }
 
 function keyPressed() {
+  if (startOfGame) {
+    startOfGame = false;
+  }
     if (!betweenLevels) {
         if (keyCode === UP_ARROW) {
             s.dir(0, -1);
@@ -383,189 +399,222 @@ function keyPressed() {
 }
 
 function draw() {
-  noStroke();
-  background(0, 165, 81);
-  fill(0, 165, 81);
-  rect(0, 0, gameWidth, gameHeight);
-  image(bigGrass, 0, screenHeight - scl*3, gameWidth, scl*4);
-  for (var i = 0; i < gameWidth/scl; i++) {
-    for (var j = 0; j < gameHeight/scl; j++) {
-      if (i % 2 == 0) {
-        if (j % 2 == 0) {
-          image(grass, scl*i, scl*j, scl, scl);
+  if (betweenLevels) {
+    //only draw the rectangle once
+    if (firstTime) {
+      fill(0, 0, 0, 100);
+      rect(0, 0, screenWidth, screenHeight);
+      firstTime = false;
+      clearLettersOnly();
+      initLetters();
+    }
+    textFont(bonusFont);
+    var nextLevel = `Level ${level} complete\nwith ${score} points!\nTap to continue`;
+    fill(255, 255, 255);
+    textSize(scl);
+    text(nextLevel, gameWidth/2, gameHeight/2);
+    textFont('Arial');
+  } else {
+    noTint();      
+    noStroke();
+    background(0, 165, 81);
+    fill(0, 165, 81);
+    rect(0, 0, gameWidth, gameHeight);
+    image(bigGrass, 0, screenHeight - scl*3, gameWidth, scl*4);
+    for (var i = 0; i < gameWidth/scl; i++) {
+      for (var j = 0; j < gameHeight/scl; j++) {
+        if (i % 2 == 0) {
+          if (j % 2 == 0) {
+            image(grass, scl*i, scl*j, scl, scl);
+          }
         }
       }
     }
-  }
-  for (var i = 0; i < letterPositions.length; i++) {
-    if (s.eat(letterPositions[i])) {
-      letterPositions.splice(i, 1);
-      if (uneatenLetters[i] == "$") {
-        //don't add $ or @ to the tail
-        s.total--;
-        s.eaten.splice(s.eaten.length-1, 1); 
-        //make a string from the eaten letters
-        currentString = "";
-        for (var j = 0; j < eatenLetters.length; j++) {
-            currentString += eatenLetters[j];
+    for (var i = 0; i < letterPositions.length; i++) {
+      if (s.eat(letterPositions[i])) {
+        letterPositions.splice(i, 1);
+        if (uneatenLetters[i] == "$") {
+          //don't add $ to the tail
+          s.total--;
+          s.eaten.splice(s.eaten.length-1, 1); 
+          //make a string from the eaten letters
+          currentString = "";
+          for (var j = 0; j < eatenLetters.length; j++) {
+              currentString += eatenLetters[j];
+          }
+          //look for words in the string and record their locations
+          var lettersToRemove = []; //TODO: might be able to replace this with eatenLettersInWord
+          for (var j = 0; j < wordsEaten.length; j++) {
+            var index = currentString.indexOf(wordsEaten[j]);
+            if (index != -1) {
+              var end = index + wordsEaten[j].length;
+              for (var k = index; k < end; k++) {
+                if (!lettersToRemove.includes(k)) {
+                  lettersToRemove.push(k);
+                }
+              }
+            }
+          }
+          //sort values in letterstoRemove - have to go in reverse order so we don't mess up the indices as we go
+          lettersToRemove.sort(function(a,b){ return b - a; });
+          wordBank.play();
+          //actually remove the letters we identified
+          for (var j = 0; j < lettersToRemove.length; j++) {
+            s.eaten.splice(lettersToRemove[j], 1);
+            s.tail.splice(lettersToRemove[j], 1); 
+            eatenLetters.splice(lettersToRemove[j], 1);
+            s.total--;
+          }
+        } else {
+          letterGrab.play();
+          eatenLetters.push(uneatenLetters[i]);
         }
+        uneatenLetters.splice(i, 1);
+
+        //check for words longer than 3 letters
+        currentString = "";
+        for (var i = 0; i < eatenLetters.length; i++) {
+          currentString += eatenLetters[i];
+        }
+        if (currentString.length > 2) {
+          var substrings = getAllSubstrings(currentString, 3);
+          for (var i = 0; i < substrings.length; i++) {
+            if (!wordsEaten.includes(substrings[i])) {
+              var wordFound = findWord(substrings[i].split(''));
+              if (wordFound) { 
+                bonus.play(); 
+                bonusFading = true;
+                bonusText = "+" + addToScore;
+                bonusTextLocation = createVector(s.x, s.y);
+              }
+            }
+          }
+          if (substrings.includes(display1)) {
+              level++;
+              bonusTextLocation = createVector(gameWidth/2, gameHeight/2);
+              betweenLevels = true;
+              firstTime = true;
+              //duplicate code
+              //draw target word before changing it
+              fill(255);
+              text(display1.toUpperCase(), gameWidth/2, screenHeight - scl);
+              spelledTarget++;
+              // target word changes when player spells it correctly-- ateachey3
+              if (display1.length == 3) {
+                  display1 = random(dictArr.slice(index4, index5));
+              }
+              else if (display1.length == 4) {
+                  display1 = random(dictArr.slice(index5, index6));
+              }
+              else if (display1.length == 5) {
+                  display1 = random(dictArr.slice(index6, index7));
+                  //reduce number of additional letters being displayed
+                  NUM_CONSONANTS = 2;
+                  NUM_VOWELS = 2;
+              }
+              else if (display1.length == 6) {
+                  display1 = random(dictArr.slice(index7, index8));
+              }
+              else if (display1.length == 7) {
+                  display1 = random(dictArr.slice(index8, index9));
+              }
+              else if (display1.length == 8) {
+                  display1 = random(dictArr.slice(index9, indexStop));
+                  //reduce number of additional letters being displayed
+                  NUM_CONSONANTS = 1;
+                  NUM_VOWELS = 1;
+              }
+              else if (display1.length == 9) {
+                  display1 = random(dictArr.slice(index3, index4));
+              }
+              //Duplicate code-- ateachey3
+              var display1Lets = display1.split('');
+              for (var i = 0; i < display1Lets.length; i++) {
+                  uneatenLetters.push(display1Lets[i]);
+                  pickLocation();
+              }
+          }
+          prevNumLettersEaten = eatenLetters.length;
+        }
+
+        justEaten = eatenLetters[eatenLetters.length - 1];
+        addLetter();
+
         //look for words in the string and record their locations
-        var lettersToRemove = []; //TODO: might be able to replace this with eatenLettersInWord
+        eatenLettersInWord = [];
         for (var j = 0; j < wordsEaten.length; j++) {
           var index = currentString.indexOf(wordsEaten[j]);
           if (index != -1) {
             var end = index + wordsEaten[j].length;
             for (var k = index; k < end; k++) {
-              if (!lettersToRemove.includes(k)) {
-                lettersToRemove.push(k);
+              if (!eatenLettersInWord.includes(k)) {
+                eatenLettersInWord.push(k);
               }
             }
           }
         }
-        //sort values in letterstoRemove - have to go in reverse order so we don't mess up the indices as we go
-        lettersToRemove.sort(function(a,b){ return b - a; });
-        wordBank.play();
-        //actually remove the letters we identified
-        for (var j = 0; j < lettersToRemove.length; j++) {
-          s.eaten.splice(lettersToRemove[j], 1);
-          s.tail.splice(lettersToRemove[j], 1); 
-          eatenLetters.splice(lettersToRemove[j], 1);
-          s.total--;
-        }
+      }
+    }
+
+    s.update();
+    s.show();
+
+    fill(255, 0, 100);
+    //draw the uneaten letters
+    for (var i = 0; i < letterPositions.length; i++) {
+      if (uneatenLetters[i] == "$") {
+        image(honeycomb, letterPositions[i].x, letterPositions[i].y, scl, scl);
+      } else if (highFreqLetters.includes(uneatenLetters[i]) || vowels.includes(uneatenLetters[i])) {
+        image(easyFlower, letterPositions[i].x, letterPositions[i].y, scl, scl);
+      } else if (medFreqLetters.includes(uneatenLetters[i])) {
+        image(medFlower, letterPositions[i].x, letterPositions[i].y, scl, scl);
       } else {
-        letterGrab.play();
-        eatenLetters.push(uneatenLetters[i]);
-      }
-      uneatenLetters.splice(i, 1);
-
-      //check for words longer than 3 letters
-      currentString = "";
-      for (var i = 0; i < eatenLetters.length; i++) {
-        currentString += eatenLetters[i];
-      }
-      if (currentString.length > 2) {
-        var substrings = getAllSubstrings(currentString, 3);
-        for (var i = 0; i < substrings.length; i++) {
-          if (!wordsEaten.includes(substrings[i])) {
-            var wordFound = findWord(substrings[i].split(''));
-            if (wordFound) { 
-              bonus.play(); 
-              bonusFading = true;
-              bonusText = addToScore;
-              bonusTextLocation = createVector(s.x, s.y);
-            }
-          }
-        }
-        if (substrings.includes(display1)) {
-            level++;
-            bonusTextLocation = createVector(gameWidth/2, gameHeight/2);
-            betweenLevels = true;
-            spelledTarget++;
-            // target word changes when player spells it correctly-- ateachey3
-            if (display1.length == 3) {
-                display1 = random(dictArr.slice(index4, index5));
-            }
-            else if (display1.length == 4) {
-                display1 = random(dictArr.slice(index5, index6));
-            }
-            else if (display1.length == 5) {
-                display1 = random(dictArr.slice(index6, index7));
-            }
-            else if (display1.length == 6) {
-                display1 = random(dictArr.slice(index7, index8));
-            }
-            else if (display1.length == 7) {
-                display1 = random(dictArr.slice(index8, index9));
-            }
-            else if (display1.length == 8) {
-                display1 = random(dictArr.slice(index9, indexStop));
-            }
-            else if (display1.length == 9) {
-                display1 = random(dictArr.slice(index3, index4));
-            }
-            //Duplicate code-- ateachey3
-            var display1Lets = display1.split('');
-            for (var i = 0; i < display1Lets.length; i++) {
-                uneatenLetters.push(display1Lets[i]);
-                pickLocation();
-            }
-        }
-        prevNumLettersEaten = eatenLetters.length;
+        image(hardFlower, letterPositions[i].x, letterPositions[i].y, scl, scl);
       }
 
-      justEaten = eatenLetters[eatenLetters.length - 1];
-      addLetter();
-
-      //look for words in the string and record their locations
-      eatenLettersInWord = [];
-      for (var j = 0; j < wordsEaten.length; j++) {
-        var index = currentString.indexOf(wordsEaten[j]);
-        if (index != -1) {
-          var end = index + wordsEaten[j].length;
-          for (var k = index; k < end; k++) {
-            if (!eatenLettersInWord.includes(k)) {
-              eatenLettersInWord.push(k);
-            }
-          }
-        }
+      fill(255);
+      textAlign(CENTER, CENTER);
+      textSize(scl/2);
+      if (uneatenLetters[i] !== "$") {
+        text(uneatenLetters[i].toUpperCase(), letterPositions[i].x + 2.5, letterPositions[i].y, scl, scl);
       }
     }
-  }
-
-  fill(255, 0, 100);
-  //draw the uneaten letters
-  for (var i = 0; i < letterPositions.length; i++) {
-    if (uneatenLetters[i] == "$") {
-      image(honeycomb, letterPositions[i].x, letterPositions[i].y, scl, scl);
-    } else if (highFreqLetters.includes(uneatenLetters[i]) || vowels.includes(uneatenLetters[i])) {
-      image(easyFlower, letterPositions[i].x, letterPositions[i].y, scl, scl);
-    } else if (medFreqLetters.includes(uneatenLetters[i])) {
-      image(medFlower, letterPositions[i].x, letterPositions[i].y, scl, scl);
-    } else {
-      image(hardFlower, letterPositions[i].x, letterPositions[i].y, scl, scl);
-    }
-
-    fill(255);
-    textAlign(CENTER, CENTER);
-    textSize(scl/2);
-    if (uneatenLetters[i] !== "$") {
-      text(uneatenLetters[i].toUpperCase(), letterPositions[i].x + 2.5, letterPositions[i].y, scl, scl);
-    }
-  }
 
     //draw target word
-    fill(255);
-    text(display1.toUpperCase(), gameWidth/2, screenHeight - scl);
+    if (!betweenLevels) {
+      fill(255);
+      text(display1.toUpperCase(), gameWidth/2, screenHeight - scl);
+    } 
 
     //draw score
     var str = `Score: ${score}`;
     text(str, scl * 2.5, screenHeight - scl*0.5);
-
-    if (betweenLevels) {
-      tint(255, 127);
-      var nextLevel = `Level ${level} complete\nwith ${score} points!\nTap to continue`;
-      fill(204, 71 , 75);
-      textSize(scl);
-      text(nextLevel, gameWidth/2, gameHeight/2);
-    } else {
-      noTint();
+    if (bonusFading) {
+      bonusTextDisplay();
     }
-    s.update();
-    s.show();
 
     if(s.death()) {
       if (spelledTarget < 1) {
-          clearThings();
-          initLetters();
+        clearThings();
+        initLetters();
       }
       else {
-          spelledTarget--;
-          eatenLetters = [];
+        spelledTarget--;
+        eatenLetters = [];
       }
     }
-    if (bonusFading) {
-        bonusTextDisplay();
-    }
+  }
+  if (startOfGame) {
+  //TODO: In a future version, this tutorial would also show the point values of the flowers and let the user practice swiping
+  fill(0, 0, 0, 100);
+  rect(0, 0, screenWidth, screenHeight);
+  textFont(bonusFont);
+  var startText = "1. Swipe to move bee. \n 2. Collect words for points. \n 3. Complete target word to level up. \n 4. Avoid walls and body.";
+  fill(255, 255, 255);
+  textSize(scl/2);
+  text(startText, gameWidth/2, gameHeight/2);
+  textFont('Arial');
+}
 }
 
 //source code that is the basis of findWord function: https://johnresig.com/blog/dictionary-lookups-in-javascript/
@@ -587,11 +636,11 @@ function findWord(letters) {
             addToScore = 0;
             for (var j = 0; j < word.length; j++) {
                 if (lowFreqLetters.includes(word[j])) {
-                  addToScore += 1;
+                  addToScore += 3;
                 } else if (medFreqLetters.includes(word[j])) {
-                  addToScore += 5;
+                  addToScore += 4;
                 } else {
-                  addToScore += 10;
+                  addToScore += 11;
                 }
                 score += addToScore;
             }
@@ -606,10 +655,7 @@ function findWord(letters) {
 function bonusTextDisplay() {
   bonusTextColor.setAlpha(fade);
   fill(bonusTextColor)
-  textSize(scl);
-  stroke(0, 0, 0);
-  strokeWeight(3);
-  //textSize(scl/2);
+  textSize(60); //TODO: make proportional to scl
   textFont(bonusFont);
   text(bonusText, bonusTextLocation.x, bonusTextLocation.y, scl, scl);
   bonusTextLocation.y = bonusTextLocation.y - 20;

@@ -37,6 +37,19 @@ function Snake() {
         this.eaten = [];
         this.tail = [];
         wall.play(); //play running into wall sound
+        if (score >= 50) {
+          score = score - 50;
+          bonusText = "-50";
+          bonusFading = true;
+          bonusTextLocation = createVector(s.x, s.y);
+        } else {
+          if (score != 0) {
+            bonusText = "-" + score;
+            bonusFading = true;
+            bonusTextLocation = createVector(s.x, s.y);
+          }
+          score = 0;
+        }
         return true;
       }
     }
@@ -58,6 +71,9 @@ function Snake() {
       this.x = constrain(this.x, 0, gameWidth - scl);
       this.y = constrain(this.y, 0, gameHeight - scl);
     }
+      if (betweenLevels) {
+  console.log("UPDATE DONE");
+}
   }
 
   this.drawBeeHeadAndTail = function(img, triX1Off, triY1Off, triX2Off, triY2Off, triX3Off, triY3Off) {
@@ -87,89 +103,92 @@ function Snake() {
   }
 
   this.show = function () {
-      //TODO: a way to minimize the number of conditionals?
-      //Draw head and stinger
-      if (this.xspeed == 0 && this.yspeed == -1) {
-        //moving up
-        if (this.tail.length > 0) {
-          this.drawBeeHeadAndTail(beeHeadUp, scl/2 - 10, scl*.8, scl/2 + 10, scl*.8, scl/2, scl*.8 + scl/2 - 5);
-        } else {
-          this.drawBeeHeadAndTail(beeHeadUp, scl/2 - 10, scl + scl*.8, scl/2 + 10, scl + scl*.8, scl/2, scl + scl*.8 + scl/2 - 5);
-        }
-      } else if (this.xspeed == -1 && this.yspeed == 0) {
-        //moving left
-        if (this.tail.length > 0) {
-          this.drawBeeHeadAndTail(beeHeadLeft, scl*.8, scl/2 - 10, scl*.8, scl/2 + 10, scl*.8 + scl/2 - 5, scl/2);
-        } else {
-          this.drawBeeHeadAndTail(beeHeadLeft, scl + scl*.8, scl/2 - 10, scl + scl*.8, scl/2 + 10, scl + scl*.8 + scl/2 - 5, scl/2);
-        }
-      } else if (this.xspeed == 0 && this.yspeed == 1) {
-        //moving down
-        if (this.tail.length > 0) {
-          this.drawBeeHeadAndTail(beeHeadDown, scl/2 - 10, -scl*.8 + scl, scl/2 + 10, -scl*.8 + scl, scl/2, -scl*.8 + scl- scl/2 + 5);
-        } else {
-          this.drawBeeHeadAndTail(beeHeadDown, scl/2 - 10, -scl*.8, scl/2 + 10, -scl*.8, scl/2, -scl*.8 - scl/2 + 5);
-        } 
+    //TODO: a way to minimize the number of conditionals?
+    //Draw head and stinger
+    if (this.xspeed == 0 && this.yspeed == -1) {
+      //moving up
+      if (this.tail.length > 0) {
+        this.drawBeeHeadAndTail(beeHeadUp, scl/2 - 10, scl*.8, scl/2 + 10, scl*.8, scl/2, scl*.8 + scl/2 - 5);
       } else {
-        //moving right
-        if (this.tail.length > 0) {
-          this.drawBeeHeadAndTail(beeHeadRight, -scl*.8 + scl, scl/2 + 10, -scl*.8 + scl, scl/2 - 10, -scl*.8 + scl - scl/2 + 5, scl/2);
-        } else {
-          this.drawBeeHeadAndTail(beeHeadRight, -scl*.8, scl/2 + 10, -scl*.8, scl/2 - 10, -scl*.8 - scl/2 + 5, scl/2);
-        }
+        this.drawBeeHeadAndTail(beeHeadUp, scl/2 - 10, scl + scl*.8, scl/2 + 10, scl + scl*.8, scl/2, scl + scl*.8 + scl/2 - 5);
       }
+    } else if (this.xspeed == -1 && this.yspeed == 0) {
+      //moving left
+      if (this.tail.length > 0) {
+        this.drawBeeHeadAndTail(beeHeadLeft, scl*.8, scl/2 - 10, scl*.8, scl/2 + 10, scl*.8 + scl/2 - 5, scl/2);
+      } else {
+        this.drawBeeHeadAndTail(beeHeadLeft, scl + scl*.8, scl/2 - 10, scl + scl*.8, scl/2 + 10, scl + scl*.8 + scl/2 - 5, scl/2);
+      }
+    } else if (this.xspeed == 0 && this.yspeed == 1) {
+      //moving down
+      if (this.tail.length > 0) {
+        this.drawBeeHeadAndTail(beeHeadDown, scl/2 - 10, -scl*.8 + scl, scl/2 + 10, -scl*.8 + scl, scl/2, -scl*.8 + scl- scl/2 + 5);
+      } else {
+        this.drawBeeHeadAndTail(beeHeadDown, scl/2 - 10, -scl*.8, scl/2 + 10, -scl*.8, scl/2, -scl*.8 - scl/2 + 5);
+      } 
+    } else {
+      //moving right
+      if (this.tail.length > 0) {
+        this.drawBeeHeadAndTail(beeHeadRight, -scl*.8 + scl, scl/2 + 10, -scl*.8 + scl, scl/2 - 10, -scl*.8 + scl - scl/2 + 5, scl/2);
+      } else {
+        this.drawBeeHeadAndTail(beeHeadRight, -scl*.8, scl/2 + 10, -scl*.8, scl/2 - 10, -scl*.8 - scl/2 + 5, scl/2);
+      }
+    }
 
-      //Draw letters in bee
-      for (var i = 0; i < this.eaten.length; i++) {
-        textAlign(CENTER, CENTER);
-        textSize(scl/2);
-        fill(255,223,0);
+    //Draw letters in bee
+    for (var i = 0; i < this.eaten.length; i++) {
+      var textOpacity;
+      if (this.tail[i]) {
         if (eatenLettersInWord.includes(i)) {
           textStyle(BOLD);
           stroke(0, 0, 0);
           strokeWeight(4);
+          textOpacity = 256;
         } else {
           textStyle(NORMAL);
           strokeWeight(0);
+          textOpacity = 75;
         }
-        if (this.tail[i]) {
-          circle(this.tail[i].x + scl/2, this.tail[i].y + scl/2, scl);
-          strokeWeight(0);
-          fill(0, 0, 0);
-          text(eatenLetters[i].toUpperCase(), this.tail[i].x, this.tail[i].y, scl, scl); 
-        }
+        fill(255,223,0);
+        circle(this.tail[i].x + scl/2, this.tail[i].y + scl/2, scl);
+        strokeWeight(0);
+        fill(0, 0, 0, textOpacity);
+        textAlign(CENTER, CENTER);
+        textSize(scl/2);
+        text(eatenLetters[i].toUpperCase(), this.tail[i].x + 5, this.tail[i].y, scl, scl); 
       }
-      textStyle(NORMAL);
+    }
+    textStyle(NORMAL);
       
-      //Draw wings -- TODO: is there a way to minimize number of conditionals?
-      if (this.xspeed == 0 && this.yspeed == -1) {
-        //moving up
-        if (this.tail.length > 0) {
-          this.drawBeeWings(scl/8, 0, scl - scl/8, 0, scl/2, scl + scl/2, scl, scl/2);
-        } else {
-          this.drawBeeWings(scl/8, scl, scl - scl/8, scl, scl/2, scl + scl/2, scl, scl/2);
-        }
-      } else if (this.xspeed == -1 && this.yspeed == 0) {
-        //moving left
-        if (this.tail.length > 0) {
-          this.drawBeeWings(0, scl/8, 0, scl - scl/8, scl + scl/2, scl/2, scl/2, scl);
-        } else {
-          this.drawBeeWings(scl, scl/8, scl, scl - scl/8, scl + scl/2, scl/2, scl/2, scl);
-        }
-      } else if (this.xspeed == 0 && this.yspeed == 1) {
-        //moving down
-        if (this.tail.length > 0) {
-          this.drawBeeWings(scl/8, scl, scl - scl/8, scl, scl/2, -scl + scl/2, scl, scl/2);
-        } else {
-          this.drawBeeWings(scl/8, 0, scl - scl/8, 0, scl/2, -scl + scl/2, scl, scl/2);
-        }
+    //Draw wings -- TODO: is there a way to minimize number of conditionals?
+    if (this.xspeed == 0 && this.yspeed == -1) {
+      //moving up
+      if (this.tail.length > 0) {
+        this.drawBeeWings(scl/8, 0, scl - scl/8, 0, scl/2, scl + scl/2, scl, scl/2);
       } else {
-        //moving right
-        if (this.tail.length > 0) {
-          this.drawBeeWings(scl, scl/8, scl, scl - scl/8, -scl + scl/2, scl/2, scl/2, scl);
-        } else {
-          this.drawBeeWings(0, scl/8, 0, scl - scl/8, -scl + scl/2, scl/2, scl/2, scl);
-        }
+        this.drawBeeWings(scl/8, scl, scl - scl/8, scl, scl/2, scl + scl/2, scl, scl/2);
       }
+    } else if (this.xspeed == -1 && this.yspeed == 0) {
+      //moving left
+      if (this.tail.length > 0) {
+        this.drawBeeWings(0, scl/8, 0, scl - scl/8, scl + scl/2, scl/2, scl/2, scl);
+      } else {
+        this.drawBeeWings(scl, scl/8, scl, scl - scl/8, scl + scl/2, scl/2, scl/2, scl);
+      }
+    } else if (this.xspeed == 0 && this.yspeed == 1) {
+      //moving down
+      if (this.tail.length > 0) {
+        this.drawBeeWings(scl/8, scl, scl - scl/8, scl, scl/2, -scl + scl/2, scl, scl/2);
+      } else {
+        this.drawBeeWings(scl/8, 0, scl - scl/8, 0, scl/2, -scl + scl/2, scl, scl/2);
+      }
+    } else {
+      //moving right
+      if (this.tail.length > 0) {
+        this.drawBeeWings(scl, scl/8, scl, scl - scl/8, -scl + scl/2, scl/2, scl/2, scl);
+      } else {
+        this.drawBeeWings(0, scl/8, 0, scl - scl/8, -scl + scl/2, scl/2, scl/2, scl);
+      }
+    }
   }
 }
