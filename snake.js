@@ -29,28 +29,31 @@ function Snake() {
   }
 
   this.death = function () {
-    for (var i = 0; i < this.tail.length; i++) {
-      var pos = this.tail[i];
-      var d = dist(this.x, this.y, pos.x, pos.y);
-      if (d < 1) {
-        this.total = 0;
-        this.eaten = [];
-        this.tail = [];
-        wall.play(); //play running into wall sound
-        if (score >= 50) {
-          score = score - 50;
-          bonusText = "-50";
-          bonusFading = true;
-          bonusTextLocation = createVector(s.x, s.y);
-        } else {
-          if (score != 0) {
-            bonusText = "-" + score;
+    if (!invincible) {
+      for (var i = 0; i < this.tail.length; i++) {
+        var pos = this.tail[i];
+        var d = dist(this.x, this.y, pos.x, pos.y);
+        if (d < 1) {
+          console.log(invincible)
+          this.total = 0;
+          this.eaten = [];
+          this.tail = [];
+          wall.play(); //play running into wall sound
+          if (score >= 50) {
+            score = score - 50;
+            bonusText = "-50";
             bonusFading = true;
             bonusTextLocation = createVector(s.x, s.y);
+          } else {
+            if (score != 0) {
+              bonusText = "-" + score;
+              bonusFading = true;
+              bonusTextLocation = createVector(s.x, s.y);
+            }
+            score = 0;
           }
-          score = 0;
+          return true;
         }
-        return true;
       }
     }
     return false;

@@ -38,7 +38,7 @@ var letterHash = {};
 var score = 0;
 var addToScore = 0;
 
-// target words -- ateachey3
+// target words
 var display1 = "";
 var spelledTarget = 0;
 var index3;
@@ -53,6 +53,7 @@ var indexStop;
 // true when the player has just completed a round
 var betweenLevels;
 var level = 0;
+var invincible = false;
 
 //art
 var beeHeadRight, beeHeadDown, beeHeadUp, beeHeadLeft, easyFlower, medFlower, hardFlower, honeycomb, grass, bigGrass;
@@ -143,7 +144,7 @@ function setup() {
     initLetters();
     textToSpeech = new p5.Speech(); // speech synthesis object
 
-    // prevents window from scrolling on desktop -- ateachey3
+    // prevents window from scrolling on desktop
     window.addEventListener("keydown", function(e) {
         // arrow keys
         if([37, 38, 39, 40].indexOf(e.keyCode) > -1) {
@@ -164,7 +165,7 @@ function setup() {
     }, { passive: false });
     
     // https://stackoverflow.com/questions/10951524/play-and-replay-a-sound-on-safari-mobile
-    // Makes sounds work on iPhone, but it starts kind of clunky on desktop-- ateachey3
+    // Makes sounds work on iPhone, but it starts kind of clunky on desktop
     var self = this;
     var letterGrab = new Audio('letterGrab.wav');
     var wall = new Audio('wall.wav');
@@ -354,12 +355,11 @@ function touchEnded() {
     }
 }
 
-// enables touch screen-- ateachey3
+// enables touch screen
 function swiped(event) {
   if (startOfGame) {
       startOfGame = false;
   }
-    // I wanted this to be a while loop but the game would freeze-- ateachey3
     if (!betweenLevels) {
         if (event.direction == 4) {
             s.dir(1, 0); //right
@@ -490,49 +490,55 @@ function draw() {
             }
           }
           if (substrings.includes(display1)) {
+              invincible = true;
               level++;
               bonusTextLocation = createVector(gameWidth/2, gameHeight/2);
-              betweenLevels = true;
-              firstTime = true;
-              //duplicate code
-              //draw target word before changing it
-              fill(255);
-              text(display1.toUpperCase(), gameWidth/2, screenHeight - scl);
-              spelledTarget++;
-              // target word changes when player spells it correctly-- ateachey3
-              if (display1.length == 3) {
-                  display1 = random(dictArr.slice(index4, index5));
-              }
-              else if (display1.length == 4) {
-                  display1 = random(dictArr.slice(index5, index6));
-              }
-              else if (display1.length == 5) {
-                  display1 = random(dictArr.slice(index6, index7));
-                  //reduce number of additional letters being displayed
-                  NUM_CONSONANTS = 2;
-                  NUM_VOWELS = 2;
-              }
-              else if (display1.length == 6) {
-                  display1 = random(dictArr.slice(index7, index8));
-              }
-              else if (display1.length == 7) {
-                  display1 = random(dictArr.slice(index8, index9));
-              }
-              else if (display1.length == 8) {
-                  display1 = random(dictArr.slice(index9, indexStop));
-                  //reduce number of additional letters being displayed
-                  NUM_CONSONANTS = 1;
-                  NUM_VOWELS = 1;
-              }
-              else if (display1.length == 9) {
-                  display1 = random(dictArr.slice(index3, index4));
-              }
-              //Duplicate code-- ateachey3
-              var display1Lets = display1.split('');
-              for (var i = 0; i < display1Lets.length; i++) {
-                  uneatenLetters.push(display1Lets[i]);
-                  pickLocation();
-              }
+              console.log(frameCount);
+              //In this case, setTimeout gives the bee time to show the completed word
+              //The bee is invincible during the time between spelling the target word
+              //and the pause state
+              setTimeout(function() {
+                betweenLevels = true;
+                firstTime = true;
+                spelledTarget++;
+                // target word changes when player spells it correctly
+                if (display1.length == 3) {
+                    display1 = random(dictArr.slice(index4, index5));
+                }
+                else if (display1.length == 4) {
+                    display1 = random(dictArr.slice(index5, index6));
+                }
+                else if (display1.length == 5) {
+                    display1 = random(dictArr.slice(index6, index7));
+                    //reduce number of additional letters being displayed
+                    NUM_CONSONANTS = 2;
+                    NUM_VOWELS = 2;
+                }
+                else if (display1.length == 6) {
+                    display1 = random(dictArr.slice(index7, index8));
+                }
+                else if (display1.length == 7) {
+                    display1 = random(dictArr.slice(index8, index9));
+                }
+                else if (display1.length == 8) {
+                    display1 = random(dictArr.slice(index9, indexStop));
+                    //reduce number of additional letters being displayed
+                    NUM_CONSONANTS = 1;
+                    NUM_VOWELS = 1;
+                }
+                else if (display1.length == 9) {
+                    display1 = random(dictArr.slice(index3, index4));
+                }
+                //duplicate code
+                var display1Lets = display1.split('');
+                for (var i = 0; i < display1Lets.length; i++) {
+                    uneatenLetters.push(display1Lets[i]);
+                    pickLocation();
+                }
+                invincible = false;
+                console.log(frameCount);
+                console.log(s.total);
+              }, s.total*180)
           }
           prevNumLettersEaten = eatenLetters.length;
         }
@@ -594,6 +600,7 @@ function draw() {
     }
 
     if(s.death()) {
+      console.log(invincible)
       if (spelledTarget < 1) {
         clearThings();
         initLetters();
