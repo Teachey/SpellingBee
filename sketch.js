@@ -53,7 +53,6 @@ var indexStop;
 // true when the player has just completed a round
 var betweenLevels;
 var level = 0;
-var invincible = false;
 
 //art
 var beeHeadRight, beeHeadDown, beeHeadUp, beeHeadLeft, easyFlower, medFlower, hardFlower, honeycomb, grass, bigGrass;
@@ -398,16 +397,72 @@ function keyPressed() {
     }
 }
 
+function drawArt() {
+  noTint();      
+  noStroke();
+  background(0, 165, 81);
+  fill(0, 165, 81);
+  rect(0, 0, gameWidth, gameHeight);
+  image(bigGrass, 0, screenHeight - scl*3, gameWidth, scl*4);
+  for (var i = 0; i < gameWidth/scl; i++) {
+    for (var j = 0; j < gameHeight/scl; j++) {
+      if (i % 2 == 0) {
+        if (j % 2 == 0) {
+          image(grass, scl*i, scl*j, scl, scl);
+        }
+      }
+    }
+  }
+  //draw target word
+  if (!betweenLevels) {
+    fill(255);
+    text(display1.toUpperCase(), gameWidth/2, screenHeight - scl);
+  } 
+
+  //draw score
+  var str = `Score: ${score}`;
+  text(str, scl * 2.5, screenHeight - scl*0.5);
+  if (bonusFading) {
+    bonusTextDisplay();
+  }
+ fill(255, 0, 100);
+  //draw the uneaten letters
+  for (var i = 0; i < letterPositions.length; i++) {
+    if (uneatenLetters[i] == "$") {
+      image(honeycomb, letterPositions[i].x, letterPositions[i].y, scl, scl);
+    } else if (highFreqLetters.includes(uneatenLetters[i]) || vowels.includes(uneatenLetters[i])) {
+      image(easyFlower, letterPositions[i].x, letterPositions[i].y, scl, scl);
+    } else if (medFreqLetters.includes(uneatenLetters[i])) {
+      image(medFlower, letterPositions[i].x, letterPositions[i].y, scl, scl);
+    } else {
+      image(hardFlower, letterPositions[i].x, letterPositions[i].y, scl, scl);
+    }
+
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textSize(scl/2);
+    if (uneatenLetters[i] !== "$") {
+      text(uneatenLetters[i].toUpperCase(), letterPositions[i].x + 2.5, letterPositions[i].y, scl, scl);
+    }
+  }
+}
+
 function draw() {
   if (betweenLevels) {
     //only draw the rectangle once
     if (firstTime) {
+      //refresh the letters on the board between levels so it doesn't get too crowded
+      clearLettersOnly();
+      initLetters();
+      drawArt();
+      s.update();
+      s.show();
+      //draw tinted rectangle over screen
       fill(0, 0, 0, 100);
       rect(0, 0, screenWidth, screenHeight);
       firstTime = false;
-      clearLettersOnly();
-      initLetters();
     }
+    //between level text
     textFont(bonusFont);
     var nextLevel = `Level ${level} complete\nwith ${score} points!\nTap to continue`;
     fill(255, 255, 255);
@@ -415,21 +470,6 @@ function draw() {
     text(nextLevel, gameWidth/2, gameHeight/2);
     textFont('Arial');
   } else {
-    noTint();      
-    noStroke();
-    background(0, 165, 81);
-    fill(0, 165, 81);
-    rect(0, 0, gameWidth, gameHeight);
-    image(bigGrass, 0, screenHeight - scl*3, gameWidth, scl*4);
-    for (var i = 0; i < gameWidth/scl; i++) {
-      for (var j = 0; j < gameHeight/scl; j++) {
-        if (i % 2 == 0) {
-          if (j % 2 == 0) {
-            image(grass, scl*i, scl*j, scl, scl);
-          }
-        }
-      }
-    }
     for (var i = 0; i < letterPositions.length; i++) {
       if (s.eat(letterPositions[i])) {
         letterPositions.splice(i, 1);
@@ -490,55 +530,45 @@ function draw() {
             }
           }
           if (substrings.includes(display1)) {
-              invincible = true;
-              level++;
-              bonusTextLocation = createVector(gameWidth/2, gameHeight/2);
-              console.log(frameCount);
-              //In this case, setTimeout gives the bee time to show the completed word
-              //The bee is invincible during the time between spelling the target word
-              //and the pause state
-              setTimeout(function() {
-                betweenLevels = true;
-                firstTime = true;
-                spelledTarget++;
-                // target word changes when player spells it correctly
-                if (display1.length == 3) {
-                    display1 = random(dictArr.slice(index4, index5));
-                }
-                else if (display1.length == 4) {
-                    display1 = random(dictArr.slice(index5, index6));
-                }
-                else if (display1.length == 5) {
-                    display1 = random(dictArr.slice(index6, index7));
-                    //reduce number of additional letters being displayed
-                    NUM_CONSONANTS = 2;
-                    NUM_VOWELS = 2;
-                }
-                else if (display1.length == 6) {
-                    display1 = random(dictArr.slice(index7, index8));
-                }
-                else if (display1.length == 7) {
-                    display1 = random(dictArr.slice(index8, index9));
-                }
-                else if (display1.length == 8) {
-                    display1 = random(dictArr.slice(index9, indexStop));
-                    //reduce number of additional letters being displayed
-                    NUM_CONSONANTS = 1;
-                    NUM_VOWELS = 1;
-                }
-                else if (display1.length == 9) {
-                    display1 = random(dictArr.slice(index3, index4));
-                }
-                //duplicate code
-                var display1Lets = display1.split('');
-                for (var i = 0; i < display1Lets.length; i++) {
-                    uneatenLetters.push(display1Lets[i]);
-                    pickLocation();
-                }
-                invincible = false;
-                console.log(frameCount);
-                console.log(s.total);
-              }, s.total*180)
+            level++;
+            bonusTextLocation = createVector(gameWidth/2, gameHeight/2);
+            betweenLevels = true;
+            firstTime = true;
+            spelledTarget++;
+            // target word changes when player spells it correctly
+            if (display1.length == 3) {
+                display1 = random(dictArr.slice(index4, index5));
+            }
+            else if (display1.length == 4) {
+                display1 = random(dictArr.slice(index5, index6));
+            }
+            else if (display1.length == 5) {
+                display1 = random(dictArr.slice(index6, index7));
+                //reduce number of additional letters being displayed
+                NUM_CONSONANTS = 2;
+                NUM_VOWELS = 2;
+            }
+            else if (display1.length == 6) {
+                display1 = random(dictArr.slice(index7, index8));
+            }
+            else if (display1.length == 7) {
+                display1 = random(dictArr.slice(index8, index9));
+            }
+            else if (display1.length == 8) {
+                display1 = random(dictArr.slice(index9, indexStop));
+                //reduce number of additional letters being displayed
+                NUM_CONSONANTS = 1;
+                NUM_VOWELS = 1;
+            }
+            else if (display1.length == 9) {
+                display1 = random(dictArr.slice(index3, index4));
+            }
+            //duplicate code
+            var display1Lets = display1.split('');
+            for (var i = 0; i < display1Lets.length; i++) {
+                uneatenLetters.push(display1Lets[i]);
+                pickLocation();
+            }
           }
           prevNumLettersEaten = eatenLetters.length;
         }
@@ -562,45 +592,11 @@ function draw() {
       }
     }
 
+    drawArt();
     s.update();
     s.show();
 
-    fill(255, 0, 100);
-    //draw the uneaten letters
-    for (var i = 0; i < letterPositions.length; i++) {
-      if (uneatenLetters[i] == "$") {
-        image(honeycomb, letterPositions[i].x, letterPositions[i].y, scl, scl);
-      } else if (highFreqLetters.includes(uneatenLetters[i]) || vowels.includes(uneatenLetters[i])) {
-        image(easyFlower, letterPositions[i].x, letterPositions[i].y, scl, scl);
-      } else if (medFreqLetters.includes(uneatenLetters[i])) {
-        image(medFlower, letterPositions[i].x, letterPositions[i].y, scl, scl);
-      } else {
-        image(hardFlower, letterPositions[i].x, letterPositions[i].y, scl, scl);
-      }
-
-      fill(255);
-      textAlign(CENTER, CENTER);
-      textSize(scl/2);
-      if (uneatenLetters[i] !== "$") {
-        text(uneatenLetters[i].toUpperCase(), letterPositions[i].x + 2.5, letterPositions[i].y, scl, scl);
-      }
-    }
-
-    //draw target word
-    if (!betweenLevels) {
-      fill(255);
-      text(display1.toUpperCase(), gameWidth/2, screenHeight - scl);
-    } 
-
-    //draw score
-    var str = `Score: ${score}`;
-    text(str, scl * 2.5, screenHeight - scl*0.5);
-    if (bonusFading) {
-      bonusTextDisplay();
-    }
-
     if(s.death()) {
-      console.log(invincible)
       if (spelledTarget < 1) {
         clearThings();
         initLetters();
@@ -612,16 +608,16 @@ function draw() {
     }
   }
   if (startOfGame) {
-  //TODO: In a future version, this tutorial would also show the point values of the flowers and let the user practice swiping
-  fill(0, 0, 0, 100);
-  rect(0, 0, screenWidth, screenHeight);
-  textFont(bonusFont);
-  var startText = "1. Swipe to move bee. \n 2. Collect words for points. \n 3. Complete target word to level up. \n 4. Avoid walls and body.";
-  fill(255, 255, 255);
-  textSize(scl/2);
-  text(startText, gameWidth/2, gameHeight/2);
-  textFont('Arial');
-}
+    //TODO: In a future version, this tutorial would also show the point values of the flowers and let the user practice swiping
+    fill(0, 0, 0, 100);
+    rect(0, 0, screenWidth, screenHeight);
+    textFont(bonusFont);
+    var startText = "1. Swipe to move bee. \n 2. Collect words for points. \n 3. Complete target word to level up. \n 4. Avoid walls and body.";
+    fill(255, 255, 255);
+    textSize(scl/2);
+    text(startText, gameWidth/2, gameHeight/2);
+    textFont('Arial');
+  }
 }
 
 //source code that is the basis of findWord function: https://johnresig.com/blog/dictionary-lookups-in-javascript/

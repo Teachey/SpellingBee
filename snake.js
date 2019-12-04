@@ -29,31 +29,28 @@ function Snake() {
   }
 
   this.death = function () {
-    if (!invincible) {
-      for (var i = 0; i < this.tail.length; i++) {
-        var pos = this.tail[i];
-        var d = dist(this.x, this.y, pos.x, pos.y);
-        if (d < 1) {
-          console.log(invincible)
-          this.total = 0;
-          this.eaten = [];
-          this.tail = [];
-          wall.play(); //play running into wall sound
-          if (score >= 50) {
-            score = score - 50;
-            bonusText = "-50";
+    for (var i = 0; i < this.tail.length; i++) {
+      var pos = this.tail[i];
+      var d = dist(this.x, this.y, pos.x, pos.y);
+      if (d < 1) {
+        this.total = 0;
+        this.eaten = [];
+        this.tail = [];
+        wall.play(); //play running into wall sound
+        if (score >= 50) {
+          score = score - 50;
+          bonusText = "-50";
+          bonusFading = true;
+          bonusTextLocation = createVector(s.x, s.y);
+        } else {
+          if (score != 0) {
+            bonusText = "-" + score;
             bonusFading = true;
             bonusTextLocation = createVector(s.x, s.y);
-          } else {
-            if (score != 0) {
-              bonusText = "-" + score;
-              bonusFading = true;
-              bonusTextLocation = createVector(s.x, s.y);
-            }
-            score = 0;
           }
-          return true;
+          score = 0;
         }
+        return true;
       }
     }
     return false;
@@ -61,22 +58,15 @@ function Snake() {
 
   this.update = function () {
     for (var i = 0; i < this.tail.length - 1; i++) {
-      if (!betweenLevels) {
-        this.tail[i] = this.tail[i + 1];
-      } 
+      this.tail[i] = this.tail[i + 1];
     }
-    if (this.total >= 1 && !betweenLevels) {
-        this.tail[this.total - 1] = createVector(this.x, this.y);
+    if (this.total >= 1) {
+      this.tail[this.total - 1] = createVector(this.x, this.y);
     } 
-    if (!betweenLevels) {
-      this.x = this.x + this.xspeed * scl;
-      this.y = this.y + this.yspeed * scl;
-      this.x = constrain(this.x, 0, gameWidth - scl);
-      this.y = constrain(this.y, 0, gameHeight - scl);
-    }
-      if (betweenLevels) {
-  console.log("UPDATE DONE");
-}
+    this.x = this.x + this.xspeed * scl;
+    this.y = this.y + this.yspeed * scl;
+    this.x = constrain(this.x, 0, gameWidth - scl);
+    this.y = constrain(this.y, 0, gameHeight - scl);
   }
 
   this.drawBeeHeadAndTail = function(img, triX1Off, triY1Off, triX2Off, triY2Off, triX3Off, triY3Off) {
