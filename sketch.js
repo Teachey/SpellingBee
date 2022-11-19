@@ -144,7 +144,7 @@ function setup() {
     // prevents window from scrolling on desktop
     window.addEventListener("keydown", function(e) {
         // arrow keys
-        if([37, 38, 39, 40].indexOf(e.keyCode) > -1) { // e.keyCode is depricated
+        if([37, 38, 39, 40].indexOf(e) > -1) { // e.keyCode is depricated
             e.preventDefault();
         }
     }, false);
@@ -308,16 +308,7 @@ function addLetter() {
           uneatenLetters.push(letter);
           } else {
           //replace consonant
-          var index = Math.floor(Math.random()*21); //num consonants in english language
-          var letter;
-          if (index >= 0 && index < 3) {
-            letter = lowFreqLetters[Math.floor(Math.random()*lowFreqLetters.length)]
-          } else if (index >= 3 && index < 7) {
-            letter = medFreqLetters[Math.floor(Math.random()*medFreqLetters.length)]
-          } else {
-            letter = highFreqLetters[Math.floor(Math.random()*highFreqLetters.length)]
-          }
-          uneatenLetters.push(letter);
+          addConsonants();
          }
     }
   }
@@ -325,24 +316,10 @@ function addLetter() {
 }
 
 function initLetters() {
-    var display1Lets = display1.split('');
-    for (var i = 0; i < display1Lets.length; i++) {
-        uneatenLetters.push(display1Lets[i]);
-        pickLocation();
-    }
+    addDisplayLetters();
     for (var i = 0; i < NUM_CONSONANTS; i++) {
-      // duplicate code
-      var index = Math.floor(Math.random()*21); //num consonants in english language
-      var letter;
-      if (index >= 0 && index < 3) {
-        letter = lowFreqLetters[Math.floor(Math.random()*lowFreqLetters.length)]
-      } else if (index >= 3 && index < 7) {
-        letter = medFreqLetters[Math.floor(Math.random()*medFreqLetters.length)]
-      } else {
-        letter = highFreqLetters[Math.floor(Math.random()*highFreqLetters.length)]
-      }
-      uneatenLetters.push(letter);
-      pickLocation();
+      addConsonants()
+      pickLocation()
     }
     for (var i = 0; i < NUM_VOWELS; i++) {
       var letter = vowels[Math.floor(Math.random()*vowels.length)]
@@ -538,13 +515,8 @@ function draw() {
             betweenLevels = true;
             firstTime = true;
             spelledTarget++;
-            newTargetWord();
-            //duplicate code
-            var display1Lets = display1.split('');
-            for (var i = 0; i < display1Lets.length; i++) {
-                uneatenLetters.push(display1Lets[i]);
-                pickLocation();
-            }
+            nextTargetWord();
+            addDisplayLetters();
           }
           prevNumLettersEaten = eatenLetters.length;
         }
@@ -596,6 +568,27 @@ function draw() {
   }
 }
 
+function addConsonants() {
+  var index = Math.floor(Math.random()*21); //num consonants in english language
+  var letter;
+  if (index >= 0 && index < 3) {
+    letter = lowFreqLetters[Math.floor(Math.random()*lowFreqLetters.length)]
+  } else if (index >= 3 && index < 7) {
+    letter = medFreqLetters[Math.floor(Math.random()*medFreqLetters.length)]
+  } else {
+    letter = highFreqLetters[Math.floor(Math.random()*highFreqLetters.length)]
+  }
+  uneatenLetters.push(letter);
+}
+
+function addDisplayLetters() {
+  var display1Lets = display1.split('');
+  for (var i = 0; i < display1Lets.length; i++) {
+      uneatenLetters.push(display1Lets[i]);
+      pickLocation();
+  }
+}
+
 //source code that is the basis of findWord function: https://johnresig.com/blog/dictionary-lookups-in-javascript/
 
 // Takes in an array of letters and finds the longest
@@ -630,7 +623,7 @@ function findWord(letters) {
     }
 }
 
-function newTargetWord() {
+function nextTargetWord() {
   // target word changes when player spells it correctly
   if (display1.length == 3) {
     display1 = random(dictArr.slice(index4, index5));
@@ -661,12 +654,44 @@ function newTargetWord() {
   }
 }
 
+function newTargetWord() {
+  // target word changes when player says "new"
+  if (display1.length == 3) {
+    display1 = random(dictArr.slice(index3, index4));
+  }
+  else if (display1.length == 4) {
+    display1 = random(dictArr.slice(index4, index5));
+  }
+  else if (display1.length == 5) {
+    display1 = random(dictArr.slice(index5, index6));
+    //reduce number of additional letters being displayed
+    NUM_CONSONANTS = 2;
+    NUM_VOWELS = 2;
+  }
+  else if (display1.length == 6) {
+    display1 = random(dictArr.slice(index6, index7));
+  }
+  else if (display1.length == 7) {
+    display1 = random(dictArr.slice(index7, index8));
+  }
+  else if (display1.length == 8) {
+    display1 = random(dictArr.slice(index8, index9));
+    //reduce number of additional letters being displayed
+    NUM_CONSONANTS = 1;
+    NUM_VOWELS = 1;
+  }
+  else if (display1.length == 9) {
+    display1 = random(dictArr.slice(index9, indexStop));
+  }
+}
+
 function voiceCommand() {
   var command = voice.resultString.split(' ').pop();
-  if (command.indexOf("new") != 1) {
-    newTargetWord(); 
+  if (command.indexOf("new") != -1) {
+    newTargetWord();
+    clearLettersOnly();
+    initLetters();
     console.log(command);
-    // appears to be registering twice
     // new target word doesn't change letters on board
   }
 }
