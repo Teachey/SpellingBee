@@ -1,7 +1,7 @@
-var s; // this is the snake
+var b; // this is the bee
 var scl; // this is the letter size
-var gameWidth; // this is the width of the area where the snake can move
-var gameHeight; // this is the height of the area where the snake can move
+var gameWidth; // this is the width of the area where the bee can move
+var gameHeight; // this is the height of the area where the bee can move
 var screenWidth; // this is the width of the window (max 750)
 var screenHeight; // this is the height of the window (max 1000)
 var cnv; // this is the entire canvas
@@ -58,7 +58,9 @@ var level = 0;
 var beeHeadRight, beeHeadDown, beeHeadUp, beeHeadLeft, easyFlower, medFlower, hardFlower, honeycomb, grass, bigGrass;
 
 //voice commands
-var voice;
+voice = new p5.SpeechRec('en-US', voiceCommand);
+voice.continuous = true; 
+voice.interimResults = true;
 
 //fonts 
 var bonusTextColor;
@@ -136,7 +138,7 @@ function setup() {
     cnv = createCanvas(screenWidth, screenHeight);
     centerCanvas();
     bonusTextColor = color(255, 255 , 255);
-    s = new Snake();
+    b = new Bee();
     frameRate(5);
     populatePossibleLetterPos();
     initLetters();
@@ -225,9 +227,6 @@ function setup() {
     document.addEventListener("touchstart", self.startBonus, false);
     self.bonus.addEventListener("play", self.pauseBonus, false);
 
-    voice = new p5.SpeechRec('en-US', voiceCommand);
-    voice.continuous = true; 
-    voice.interimResults = true;
     voice.start();
 }
 
@@ -341,13 +340,13 @@ function swiped(event) {
   }
     if (!betweenLevels) {
         if (event.direction == 4) {
-            s.dir(1, 0); //right
+            b.dir(1, 0); //right
         } else if (event.direction == 8) {
-            s.dir(0, -1); //up
+            b.dir(0, -1); //up
         } else if (event.direction == 16) {
-            s.dir(0, 1); //down
+            b.dir(0, 1); //down
         } else if (event.direction == 2) {
-            s.dir(-1, 0); //left
+            b.dir(-1, 0); //left
         }
     } else {
         if (event.direction) {
@@ -362,13 +361,13 @@ function keyPressed() {
   }
     if (!betweenLevels) {
         if (keyCode === UP_ARROW) {
-            s.dir(0, -1);
+            b.dir(0, -1);
         } else if (keyCode === DOWN_ARROW) {
-            s.dir(0, 1);
+            b.dir(0, 1);
         } else if (keyCode === RIGHT_ARROW) {
-            s.dir(1, 0);
+            b.dir(1, 0);
         } else if (keyCode === LEFT_ARROW) {
-            s.dir(-1, 0);
+            b.dir(-1, 0);
         }
     } else {
         if (keyCode == ENTER) {
@@ -435,8 +434,8 @@ function draw() {
       clearLettersOnly();
       initLetters();
       drawArt();
-      s.update();
-      s.show();
+      b.update();
+      b.show();
       //draw tinted rectangle over screen
       fill(0, 0, 0, 100);
       rect(0, 0, screenWidth, screenHeight);
@@ -451,12 +450,12 @@ function draw() {
     textFont('Arial');
   } else {
     for (var i = 0; i < letterPositions.length; i++) {
-      if (s.eat(letterPositions[i])) {
+      if (b.eat(letterPositions[i])) {
         letterPositions.splice(i, 1);
         if (uneatenLetters[i] == "$") {
           //don't add $ to the tail
-          s.total--;
-          s.eaten.splice(s.eaten.length-1, 1); 
+          b.total--;
+          b.eaten.splice(b.eaten.length-1, 1); 
           //make a string from the eaten letters
           currentString = "";
           for (var j = 0; j < eatenLetters.length; j++) {
@@ -480,10 +479,10 @@ function draw() {
           wordBank.play();
           //actually remove the letters we identified
           for (var j = 0; j < lettersToRemove.length; j++) {
-            s.eaten.splice(lettersToRemove[j], 1);
-            s.tail.splice(lettersToRemove[j], 1); 
+            b.eaten.splice(lettersToRemove[j], 1);
+            b.tail.splice(lettersToRemove[j], 1); 
             eatenLetters.splice(lettersToRemove[j], 1);
-            s.total--;
+            b.total--;
           }
         } else {
           letterGrab.play();
@@ -505,7 +504,7 @@ function draw() {
                 bonus.play(); 
                 bonusFading = true;
                 bonusText = "+" + addToScore;
-                bonusTextLocation = createVector(s.x, s.y);
+                bonusTextLocation = createVector(b.x, b.y);
               }
             }
           }
@@ -541,10 +540,10 @@ function draw() {
     }
 
     drawArt();
-    s.update();
-    s.show();
+    b.update();
+    b.show();
 
-    if(s.death()) {
+    if(b.death()) {
       if (spelledTarget < 1) {
         clearThings();
         initLetters();

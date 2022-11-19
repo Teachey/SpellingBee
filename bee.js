@@ -1,4 +1,4 @@
-function Snake() {
+function Bee() {
   this.x = 0;
   this.y = 0;
   this.xspeed = 0;
@@ -36,12 +36,12 @@ function Snake() {
           score = score - 50;
           bonusText = "-50";
           bonusFading = true;
-          bonusTextLocation = createVector(s.x, s.y);
+          bonusTextLocation = createVector(b.x, b.y);
         } else {
           if (score != 0) {
             bonusText = "-" + score;
             bonusFading = true;
-            bonusTextLocation = createVector(s.x, s.y);
+            bonusTextLocation = createVector(b.x, b.y);
           }
           score = 0;
         }
