@@ -57,8 +57,8 @@ var level = 0;
 //art
 var beeHeadRight, beeHeadDown, beeHeadUp, beeHeadLeft, easyFlower, medFlower, hardFlower, honeycomb, grass, bigGrass;
 
-//sound
-var textToSpeech;
+//voice commands
+var voice;
 
 //fonts 
 var bonusTextColor;
@@ -85,7 +85,6 @@ function preload() {
     medFlower = loadImage('fourPetalFlower.png');
     hardFlower = loadImage('manyPetalFlower.png');
     honeycomb = loadImage('honeycomb.png');
-    //bonusFont = 'Helvetica';
     bonusFont = loadFont('Baloo-Regular.ttf');
 
     dictArr = dict.split('\n').sort(function(a,b) {
@@ -141,12 +140,11 @@ function setup() {
     frameRate(5);
     populatePossibleLetterPos();
     initLetters();
-    textToSpeech = new p5.Speech(); // speech synthesis object
 
     // prevents window from scrolling on desktop
     window.addEventListener("keydown", function(e) {
         // arrow keys
-        if([37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+        if([37, 38, 39, 40].indexOf(e.keyCode) > -1) { // e.keyCode is depricated
             e.preventDefault();
         }
     }, false);
@@ -226,6 +224,11 @@ function setup() {
     self.wordBank.addEventListener("play", self.pauseWordBank, false);
     document.addEventListener("touchstart", self.startBonus, false);
     self.bonus.addEventListener("play", self.pauseBonus, false);
+
+    voice = new p5.SpeechRec('en-US', voiceCommand);
+    voice.continuous = true; 
+    voice.interimResults = true;
+    voice.start();
 }
 
 function centerCanvas() {
@@ -535,34 +538,7 @@ function draw() {
             betweenLevels = true;
             firstTime = true;
             spelledTarget++;
-            // target word changes when player spells it correctly
-            if (display1.length == 3) {
-                display1 = random(dictArr.slice(index4, index5));
-            }
-            else if (display1.length == 4) {
-                display1 = random(dictArr.slice(index5, index6));
-            }
-            else if (display1.length == 5) {
-                display1 = random(dictArr.slice(index6, index7));
-                //reduce number of additional letters being displayed
-                NUM_CONSONANTS = 2;
-                NUM_VOWELS = 2;
-            }
-            else if (display1.length == 6) {
-                display1 = random(dictArr.slice(index7, index8));
-            }
-            else if (display1.length == 7) {
-                display1 = random(dictArr.slice(index8, index9));
-            }
-            else if (display1.length == 8) {
-                display1 = random(dictArr.slice(index9, indexStop));
-                //reduce number of additional letters being displayed
-                NUM_CONSONANTS = 1;
-                NUM_VOWELS = 1;
-            }
-            else if (display1.length == 9) {
-                display1 = random(dictArr.slice(index3, index4));
-            }
+            newTargetWord();
             //duplicate code
             var display1Lets = display1.split('');
             for (var i = 0; i < display1Lets.length; i++) {
@@ -634,7 +610,6 @@ function findWord(letters) {
         // And see if it's in the dictionary
         if (dictionary[word]) {
           if(!wordsEaten.includes(word)) {
-            textToSpeech.speak(word); //speech to text reads the word
             wordsEaten.push(word);
             addToScore = 0;
             for (var j = 0; j < word.length; j++) {
@@ -653,6 +628,47 @@ function findWord(letters) {
         // Otherwise remove another letter from the end
         currentLetters.pop();
     }
+}
+
+function newTargetWord() {
+  // target word changes when player spells it correctly
+  if (display1.length == 3) {
+    display1 = random(dictArr.slice(index4, index5));
+  }
+  else if (display1.length == 4) {
+    display1 = random(dictArr.slice(index5, index6));
+  }
+  else if (display1.length == 5) {
+    display1 = random(dictArr.slice(index6, index7));
+    //reduce number of additional letters being displayed
+    NUM_CONSONANTS = 2;
+    NUM_VOWELS = 2;
+  }
+  else if (display1.length == 6) {
+    display1 = random(dictArr.slice(index7, index8));
+  }
+  else if (display1.length == 7) {
+    display1 = random(dictArr.slice(index8, index9));
+  }
+  else if (display1.length == 8) {
+    display1 = random(dictArr.slice(index9, indexStop));
+    //reduce number of additional letters being displayed
+    NUM_CONSONANTS = 1;
+    NUM_VOWELS = 1;
+  }
+  else if (display1.length == 9) {
+    display1 = random(dictArr.slice(index3, index4));
+  }
+}
+
+function voiceCommand() {
+  var command = voice.resultString.split(' ').pop();
+  if (command.indexOf("new") != 1) {
+    newTargetWord(); 
+    console.log(command);
+    // appears to be registering twice
+    // new target word doesn't change letters on board
+  }
 }
 
 function bonusTextDisplay() {
@@ -680,3 +696,14 @@ function bonusTextDisplay() {
   }
   textFont('Helvetica');
 }
+
+/** 
+var foo = new p5.SpeechRec(); // speech recognition object (will prompt for mic access)
+foo.onResult = showResult; // bind callback function to trigger when speech is recognized
+foo.start(); // start listening
+
+function showResult()
+{
+  console.log(foo.resultString); // log the result
+}
+*/
