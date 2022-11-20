@@ -54,6 +54,9 @@ var indexStop;
 var betweenLevels;
 var level = 0;
 
+// true when player says pause
+var paused;
+
 //art
 var beeHeadRight, beeHeadDown, beeHeadUp, beeHeadLeft, easyFlower, medFlower, hardFlower, honeycomb,
 grass, bigGrass;
@@ -74,6 +77,7 @@ var bonusTextLocation;
 var bonusFading = false;
 var bonusFont;
 
+// firstTime is used for pause states
 var firstTime = false; 
 var startOfGame = true;
 
@@ -124,7 +128,7 @@ function preload() {
     }
     display1 = random(dictArr.slice(index3, index4));
     letterScoresDatabase = letters;
-    for (let [key, value] of Object.entries(letterScoresDatabase)) {
+    for (var [key, value] of Object.entries(letterScoresDatabase)) {
       letterHash[value.letter] = parseInt(value.points);
     }
 }
@@ -136,6 +140,7 @@ function setup() {
     screenWidth = gameWidth;
     screenHeight = windowHeight;
     betweenLevels = false;
+    paused = false;
     cnv = createCanvas(screenWidth, screenHeight);
     centerCanvas();
     bonusTextColor = color(255, 255 , 255);
@@ -328,18 +333,12 @@ function initLetters() {
     }
 }
 
-function touchEnded() {
-    if (betweenLevels) {
-      betweenLevels = false;
-    }
-}
-
 // enables touch screen
 function swiped(event) {
   if (startOfGame) {
       startOfGame = false;
   }
-    if (!betweenLevels) {
+    if (!betweenLevels && !paused) {
         if (event.direction == 4) {
             b.dir(1, 0); //right
         } else if (event.direction == 8) {
@@ -352,6 +351,7 @@ function swiped(event) {
     } else {
         if (event.direction) {
             betweenLevels = false;
+            //paused = false;
         }
     }
 }
@@ -360,7 +360,7 @@ function keyPressed() {
   if (startOfGame) {
     startOfGame = false;
   }
-    if (!betweenLevels) {
+    if (!betweenLevels && !paused) {
         if (keyCode === UP_ARROW) {
             b.dir(0, -1);
         } else if (keyCode === DOWN_ARROW) {
@@ -373,6 +373,7 @@ function keyPressed() {
     } else {
         if (keyCode == ENTER) {
             betweenLevels = false;
+            paused = false;
         }
     }
 }
@@ -449,6 +450,14 @@ function draw() {
     textSize(scl);
     text(nextLevel, gameWidth/2, gameHeight/2);
     textFont('Arial');
+  } else if (paused) {
+    // duplicate code
+    if (firstTime) {
+      // draw tinted rectangle over screen
+      fill(0, 0, 0, 100);
+      rect(0, 0, screenWidth, screenHeight);
+      firstTime = false;
+    }
   } else {
     for (var i = 0; i < letterPositions.length; i++) {
       if (b.eat(letterPositions[i])) {
@@ -692,6 +701,17 @@ function voiceCommand() {
     newTargetWord();
     clearLettersOnly();
     initLetters();
+    console.log(command);
+  }
+
+  if (command.indexOf("pause") != -1 && !startOfGame && !betweenLevels) {
+    paused = true;
+    firstTime = true;
+    console.log(command);
+  }
+
+  if (command.indexOf("play") != -1 && !startOfGame && !betweenLevels) {
+    paused = false;
     console.log(command);
   }
 }
