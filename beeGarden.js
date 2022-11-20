@@ -55,7 +55,8 @@ var betweenLevels;
 var level = 0;
 
 //art
-var beeHeadRight, beeHeadDown, beeHeadUp, beeHeadLeft, easyFlower, medFlower, hardFlower, honeycomb, grass, bigGrass;
+var beeHeadRight, beeHeadDown, beeHeadUp, beeHeadLeft, easyFlower, medFlower, hardFlower, honeycomb,
+grass, bigGrass;
 
 //voice commands
 voice = new p5.SpeechRec('en-US', voiceCommand);
@@ -240,7 +241,8 @@ function windowResized() {
 }
 
 function populatePossibleLetterPos() {
-  //create an array with all possible letter locations - do this so we can keep track of which ones have been taken.
+  //create an array with all possible letter locations - do this so we can keep track of which ones
+  //have been taken.
   var cols = floor(gameWidth/scl);
   var rows = floor(gameHeight/scl);
   for (var i = 0; i < cols; i++) {
@@ -274,7 +276,6 @@ function clearLettersOnly() {
   letterPositions = [];
     possibleLetterPositions = [];
         populatePossibleLetterPos();
-
 }
 
 function clearThings() {
@@ -296,14 +297,14 @@ function addLetter() {
     uneatenLetters.push(letter);
   } else { 
     //infrequently but randomly - put a word bank in place of a letter
-    var randomNumber = Math.floor(Math.random()*15);
+    var randomNumber = Math.floor(Math.random() * 15);
     if (randomNumber > 0 && randomNumber < 4) {
       uneatenLetters.push("$");
     } else {
       //if the eaten letter isn't in the target word and a wordbank isn't randomly added, replace it with a letter of its same type
       if (vowels.includes(justEaten)) {
           //replace vowel
-          var letter = vowels[Math.floor(Math.random()*vowels.length)]
+          var letter = vowels[Math.floor(Math.random() * vowels.length)]
           uneatenLetters.push(letter);
           } else {
           //replace consonant
@@ -554,12 +555,13 @@ function draw() {
       }
     }
   }
+
   if (startOfGame) {
-    //TODO: In a future version, this tutorial would also show the point values of the flowers and let the user practice swiping
     fill(0, 0, 0, 100);
     rect(0, 0, screenWidth, screenHeight);
     textFont(bonusFont);
-    var startText = "1. Swipe to move bee. \n 2. Collect words for points. \n 3. Complete target word to level up. \n 4. Avoid walls and body.";
+    var startText = "1. Swipe to move bee. \n 2. Collect words for points. \n 3. Complete target" +
+      " word to level up. \n 4. Avoid walls and body.";
     fill(255, 255, 255);
     textSize(scl/2);
     text(startText, gameWidth/2, gameHeight/2);
@@ -568,7 +570,7 @@ function draw() {
 }
 
 function addConsonants() {
-  var index = Math.floor(Math.random()*21); //num consonants in english language
+  var index = Math.floor(Math.random() * 21); //num consonants in english language
   var letter;
   if (index >= 0 && index < 3) {
     letter = lowFreqLetters[Math.floor(Math.random()*lowFreqLetters.length)]
@@ -686,12 +688,11 @@ function newTargetWord() {
 
 function voiceCommand() {
   var command = voice.resultString.split(' ').pop();
-  if (command.indexOf("new") != -1) {
+  if (command.indexOf("new") != -1 && !startOfGame && !betweenLevels) {
     newTargetWord();
     clearLettersOnly();
     initLetters();
     console.log(command);
-    // new target word doesn't change letters on board
   }
 }
 
@@ -720,14 +721,3 @@ function bonusTextDisplay() {
   }
   textFont('Helvetica');
 }
-
-/** 
-var foo = new p5.SpeechRec(); // speech recognition object (will prompt for mic access)
-foo.onResult = showResult; // bind callback function to trigger when speech is recognized
-foo.start(); // start listening
-
-function showResult()
-{
-  console.log(foo.resultString); // log the result
-}
-*/
