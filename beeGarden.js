@@ -1,7 +1,7 @@
-var s; // this is the snake
+var b; // this is the bee
 var scl; // this is the letter size
-var gameWidth; // this is the width of the area where the snake can move
-var gameHeight; // this is the height of the area where the snake can move
+var gameWidth; // this is the width of the area where the bee can move
+var gameHeight; // this is the height of the area where the bee can move
 var screenWidth; // this is the width of the window (max 750)
 var screenHeight; // this is the height of the window (max 1000)
 var cnv; // this is the entire canvas
@@ -54,11 +54,17 @@ var indexStop;
 var betweenLevels;
 var level = 0;
 
-//art
-var beeHeadRight, beeHeadDown, beeHeadUp, beeHeadLeft, easyFlower, medFlower, hardFlower, honeycomb, grass, bigGrass;
+// true when player says pause
+var paused;
 
-//sound
-var textToSpeech;
+//art
+var beeHeadRight, beeHeadDown, beeHeadUp, beeHeadLeft, easyFlower, medFlower, hardFlower, honeycomb,
+grass, bigGrass;
+
+//voice commands
+voice = new p5.SpeechRec('en-US', voiceCommand);
+voice.continuous = true; 
+voice.interimResults = true;
 
 //fonts 
 var bonusTextColor;
@@ -71,6 +77,7 @@ var bonusTextLocation;
 var bonusFading = false;
 var bonusFont;
 
+// firstTime is used for pause states
 var firstTime = false; 
 var startOfGame = true;
 
@@ -85,7 +92,6 @@ function preload() {
     medFlower = loadImage('fourPetalFlower.png');
     hardFlower = loadImage('manyPetalFlower.png');
     honeycomb = loadImage('honeycomb.png');
-    //bonusFont = 'Helvetica';
     bonusFont = loadFont('Baloo-Regular.ttf');
 
     dictArr = dict.split('\n').sort(function(a,b) {
@@ -122,7 +128,7 @@ function preload() {
     }
     display1 = random(dictArr.slice(index3, index4));
     letterScoresDatabase = letters;
-    for (let [key, value] of Object.entries(letterScoresDatabase)) {
+    for (var [key, value] of Object.entries(letterScoresDatabase)) {
       letterHash[value.letter] = parseInt(value.points);
     }
 }
@@ -134,19 +140,19 @@ function setup() {
     screenWidth = gameWidth;
     screenHeight = windowHeight;
     betweenLevels = false;
+    paused = false;
     cnv = createCanvas(screenWidth, screenHeight);
     centerCanvas();
     bonusTextColor = color(255, 255 , 255);
-    s = new Snake();
+    b = new Bee();
     frameRate(5);
     populatePossibleLetterPos();
     initLetters();
-    textToSpeech = new p5.Speech(); // speech synthesis object
 
     // prevents window from scrolling on desktop
     window.addEventListener("keydown", function(e) {
         // arrow keys
-        if([37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+        if([37, 38, 39, 40].indexOf(e) > -1) { // e.keyCode is depricated
             e.preventDefault();
         }
     }, false);
@@ -226,6 +232,8 @@ function setup() {
     self.wordBank.addEventListener("play", self.pauseWordBank, false);
     document.addEventListener("touchstart", self.startBonus, false);
     self.bonus.addEventListener("play", self.pauseBonus, false);
+
+    voice.start();
 }
 
 function centerCanvas() {
@@ -238,7 +246,8 @@ function windowResized() {
 }
 
 function populatePossibleLetterPos() {
-  //create an array with all possible letter locations - do this so we can keep track of which ones have been taken.
+  //create an array with all possible letter locations - do this so we can keep track of which ones
+  //have been taken.
   var cols = floor(gameWidth/scl);
   var rows = floor(gameHeight/scl);
   for (var i = 0; i < cols; i++) {
@@ -272,7 +281,6 @@ function clearLettersOnly() {
   letterPositions = [];
     possibleLetterPositions = [];
         populatePossibleLetterPos();
-
 }
 
 function clearThings() {
@@ -294,27 +302,18 @@ function addLetter() {
     uneatenLetters.push(letter);
   } else { 
     //infrequently but randomly - put a word bank in place of a letter
-    var randomNumber = Math.floor(Math.random()*15);
+    var randomNumber = Math.floor(Math.random() * 15);
     if (randomNumber > 0 && randomNumber < 4) {
       uneatenLetters.push("$");
     } else {
       //if the eaten letter isn't in the target word and a wordbank isn't randomly added, replace it with a letter of its same type
       if (vowels.includes(justEaten)) {
           //replace vowel
-          var letter = vowels[Math.floor(Math.random()*vowels.length)]
+          var letter = vowels[Math.floor(Math.random() * vowels.length)]
           uneatenLetters.push(letter);
           } else {
           //replace consonant
-          var index = Math.floor(Math.random()*21); //num consonants in english language
-          var letter;
-          if (index >= 0 && index < 3) {
-            letter = lowFreqLetters[Math.floor(Math.random()*lowFreqLetters.length)]
-          } else if (index >= 3 && index < 7) {
-            letter = medFreqLetters[Math.floor(Math.random()*medFreqLetters.length)]
-          } else {
-            letter = highFreqLetters[Math.floor(Math.random()*highFreqLetters.length)]
-          }
-          uneatenLetters.push(letter);
+          addConsonants();
          }
     }
   }
@@ -322,24 +321,10 @@ function addLetter() {
 }
 
 function initLetters() {
-    var display1Lets = display1.split('');
-    for (var i = 0; i < display1Lets.length; i++) {
-        uneatenLetters.push(display1Lets[i]);
-        pickLocation();
-    }
+    addDisplayLetters();
     for (var i = 0; i < NUM_CONSONANTS; i++) {
-      // duplicate code
-      var index = Math.floor(Math.random()*21); //num consonants in english language
-      var letter;
-      if (index >= 0 && index < 3) {
-        letter = lowFreqLetters[Math.floor(Math.random()*lowFreqLetters.length)]
-      } else if (index >= 3 && index < 7) {
-        letter = medFreqLetters[Math.floor(Math.random()*medFreqLetters.length)]
-      } else {
-        letter = highFreqLetters[Math.floor(Math.random()*highFreqLetters.length)]
-      }
-      uneatenLetters.push(letter);
-      pickLocation();
+      addConsonants()
+      pickLocation()
     }
     for (var i = 0; i < NUM_VOWELS; i++) {
       var letter = vowels[Math.floor(Math.random()*vowels.length)]
@@ -348,30 +333,25 @@ function initLetters() {
     }
 }
 
-function touchEnded() {
-    if (betweenLevels) {
-      betweenLevels = false;
-    }
-}
-
 // enables touch screen
 function swiped(event) {
   if (startOfGame) {
       startOfGame = false;
   }
-    if (!betweenLevels) {
+    if (!betweenLevels && !paused) {
         if (event.direction == 4) {
-            s.dir(1, 0); //right
+            b.dir(1, 0); //right
         } else if (event.direction == 8) {
-            s.dir(0, -1); //up
+            b.dir(0, -1); //up
         } else if (event.direction == 16) {
-            s.dir(0, 1); //down
+            b.dir(0, 1); //down
         } else if (event.direction == 2) {
-            s.dir(-1, 0); //left
+            b.dir(-1, 0); //left
         }
     } else {
         if (event.direction) {
             betweenLevels = false;
+            //paused = false;
         }
     }
 }
@@ -380,19 +360,20 @@ function keyPressed() {
   if (startOfGame) {
     startOfGame = false;
   }
-    if (!betweenLevels) {
+    if (!betweenLevels && !paused) {
         if (keyCode === UP_ARROW) {
-            s.dir(0, -1);
+            b.dir(0, -1);
         } else if (keyCode === DOWN_ARROW) {
-            s.dir(0, 1);
+            b.dir(0, 1);
         } else if (keyCode === RIGHT_ARROW) {
-            s.dir(1, 0);
+            b.dir(1, 0);
         } else if (keyCode === LEFT_ARROW) {
-            s.dir(-1, 0);
+            b.dir(-1, 0);
         }
     } else {
         if (keyCode == ENTER) {
             betweenLevels = false;
+            paused = false;
         }
     }
 }
@@ -455,8 +436,8 @@ function draw() {
       clearLettersOnly();
       initLetters();
       drawArt();
-      s.update();
-      s.show();
+      b.update();
+      b.show();
       //draw tinted rectangle over screen
       fill(0, 0, 0, 100);
       rect(0, 0, screenWidth, screenHeight);
@@ -469,14 +450,22 @@ function draw() {
     textSize(scl);
     text(nextLevel, gameWidth/2, gameHeight/2);
     textFont('Arial');
+  } else if (paused) {
+    // duplicate code
+    if (firstTime) {
+      // draw tinted rectangle over screen
+      fill(0, 0, 0, 100);
+      rect(0, 0, screenWidth, screenHeight);
+      firstTime = false;
+    }
   } else {
     for (var i = 0; i < letterPositions.length; i++) {
-      if (s.eat(letterPositions[i])) {
+      if (b.eat(letterPositions[i])) {
         letterPositions.splice(i, 1);
         if (uneatenLetters[i] == "$") {
           //don't add $ to the tail
-          s.total--;
-          s.eaten.splice(s.eaten.length-1, 1); 
+          b.total--;
+          b.eaten.splice(b.eaten.length-1, 1); 
           //make a string from the eaten letters
           currentString = "";
           for (var j = 0; j < eatenLetters.length; j++) {
@@ -500,10 +489,10 @@ function draw() {
           wordBank.play();
           //actually remove the letters we identified
           for (var j = 0; j < lettersToRemove.length; j++) {
-            s.eaten.splice(lettersToRemove[j], 1);
-            s.tail.splice(lettersToRemove[j], 1); 
+            b.eaten.splice(lettersToRemove[j], 1);
+            b.tail.splice(lettersToRemove[j], 1); 
             eatenLetters.splice(lettersToRemove[j], 1);
-            s.total--;
+            b.total--;
           }
         } else {
           letterGrab.play();
@@ -525,7 +514,7 @@ function draw() {
                 bonus.play(); 
                 bonusFading = true;
                 bonusText = "+" + addToScore;
-                bonusTextLocation = createVector(s.x, s.y);
+                bonusTextLocation = createVector(b.x, b.y);
               }
             }
           }
@@ -535,40 +524,8 @@ function draw() {
             betweenLevels = true;
             firstTime = true;
             spelledTarget++;
-            // target word changes when player spells it correctly
-            if (display1.length == 3) {
-                display1 = random(dictArr.slice(index4, index5));
-            }
-            else if (display1.length == 4) {
-                display1 = random(dictArr.slice(index5, index6));
-            }
-            else if (display1.length == 5) {
-                display1 = random(dictArr.slice(index6, index7));
-                //reduce number of additional letters being displayed
-                NUM_CONSONANTS = 2;
-                NUM_VOWELS = 2;
-            }
-            else if (display1.length == 6) {
-                display1 = random(dictArr.slice(index7, index8));
-            }
-            else if (display1.length == 7) {
-                display1 = random(dictArr.slice(index8, index9));
-            }
-            else if (display1.length == 8) {
-                display1 = random(dictArr.slice(index9, indexStop));
-                //reduce number of additional letters being displayed
-                NUM_CONSONANTS = 1;
-                NUM_VOWELS = 1;
-            }
-            else if (display1.length == 9) {
-                display1 = random(dictArr.slice(index3, index4));
-            }
-            //duplicate code
-            var display1Lets = display1.split('');
-            for (var i = 0; i < display1Lets.length; i++) {
-                uneatenLetters.push(display1Lets[i]);
-                pickLocation();
-            }
+            nextTargetWord();
+            addDisplayLetters();
           }
           prevNumLettersEaten = eatenLetters.length;
         }
@@ -593,10 +550,10 @@ function draw() {
     }
 
     drawArt();
-    s.update();
-    s.show();
+    b.update();
+    b.show();
 
-    if(s.death()) {
+    if(b.death()) {
       if (spelledTarget < 1) {
         clearThings();
         initLetters();
@@ -607,16 +564,38 @@ function draw() {
       }
     }
   }
+
   if (startOfGame) {
-    //TODO: In a future version, this tutorial would also show the point values of the flowers and let the user practice swiping
     fill(0, 0, 0, 100);
     rect(0, 0, screenWidth, screenHeight);
     textFont(bonusFont);
-    var startText = "1. Swipe to move bee. \n 2. Collect words for points. \n 3. Complete target word to level up. \n 4. Avoid walls and body.";
+    var startText = "1. Swipe to move bee. \n 2. Collect words for points. \n 3. Complete target" +
+      " word to level up. \n 4. Avoid walls and body.";
     fill(255, 255, 255);
     textSize(scl/2);
     text(startText, gameWidth/2, gameHeight/2);
     textFont('Arial');
+  }
+}
+
+function addConsonants() {
+  var index = Math.floor(Math.random() * 21); //num consonants in english language
+  var letter;
+  if (index >= 0 && index < 3) {
+    letter = lowFreqLetters[Math.floor(Math.random()*lowFreqLetters.length)]
+  } else if (index >= 3 && index < 7) {
+    letter = medFreqLetters[Math.floor(Math.random()*medFreqLetters.length)]
+  } else {
+    letter = highFreqLetters[Math.floor(Math.random()*highFreqLetters.length)]
+  }
+  uneatenLetters.push(letter);
+}
+
+function addDisplayLetters() {
+  var display1Lets = display1.split('');
+  for (var i = 0; i < display1Lets.length; i++) {
+      uneatenLetters.push(display1Lets[i]);
+      pickLocation();
   }
 }
 
@@ -634,7 +613,6 @@ function findWord(letters) {
         // And see if it's in the dictionary
         if (dictionary[word]) {
           if(!wordsEaten.includes(word)) {
-            textToSpeech.speak(word); //speech to text reads the word
             wordsEaten.push(word);
             addToScore = 0;
             for (var j = 0; j < word.length; j++) {
@@ -653,6 +631,89 @@ function findWord(letters) {
         // Otherwise remove another letter from the end
         currentLetters.pop();
     }
+}
+
+function nextTargetWord() {
+  // target word changes when player spells it correctly
+  if (display1.length == 3) {
+    display1 = random(dictArr.slice(index4, index5));
+  }
+  else if (display1.length == 4) {
+    display1 = random(dictArr.slice(index5, index6));
+  }
+  else if (display1.length == 5) {
+    display1 = random(dictArr.slice(index6, index7));
+    //reduce number of additional letters being displayed
+    NUM_CONSONANTS = 2;
+    NUM_VOWELS = 2;
+  }
+  else if (display1.length == 6) {
+    display1 = random(dictArr.slice(index7, index8));
+  }
+  else if (display1.length == 7) {
+    display1 = random(dictArr.slice(index8, index9));
+  }
+  else if (display1.length == 8) {
+    display1 = random(dictArr.slice(index9, indexStop));
+    //reduce number of additional letters being displayed
+    NUM_CONSONANTS = 1;
+    NUM_VOWELS = 1;
+  }
+  else if (display1.length == 9) {
+    display1 = random(dictArr.slice(index3, index4));
+  }
+}
+
+function newTargetWord() {
+  // target word changes when player says "new"
+  if (display1.length == 3) {
+    display1 = random(dictArr.slice(index3, index4));
+  }
+  else if (display1.length == 4) {
+    display1 = random(dictArr.slice(index4, index5));
+  }
+  else if (display1.length == 5) {
+    display1 = random(dictArr.slice(index5, index6));
+    //reduce number of additional letters being displayed
+    NUM_CONSONANTS = 2;
+    NUM_VOWELS = 2;
+  }
+  else if (display1.length == 6) {
+    display1 = random(dictArr.slice(index6, index7));
+  }
+  else if (display1.length == 7) {
+    display1 = random(dictArr.slice(index7, index8));
+  }
+  else if (display1.length == 8) {
+    display1 = random(dictArr.slice(index8, index9));
+    //reduce number of additional letters being displayed
+    NUM_CONSONANTS = 1;
+    NUM_VOWELS = 1;
+  }
+  else if (display1.length == 9) {
+    display1 = random(dictArr.slice(index9, indexStop));
+  }
+}
+
+function voiceCommand() {
+  var command = voice.resultString.split(' ').pop();
+  if (command.indexOf("new") != -1 && !startOfGame && !betweenLevels) {
+    newTargetWord();
+    clearLettersOnly();
+    initLetters();
+    console.log(command);
+  }
+
+  if (command.indexOf("pause") != -1 && !startOfGame && !betweenLevels) {
+    paused = true;
+    firstTime = true;
+    console.log(command);
+  }
+
+  if (command.indexOf("play") != -1 && !startOfGame && !betweenLevels) {
+    paused = false;
+    console.log(command);
+  }
 }
 
 function bonusTextDisplay() {
